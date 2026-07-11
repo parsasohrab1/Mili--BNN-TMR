@@ -1,0 +1,10 @@
+description: Mili BNN-TMR BNN accelerator chip
+
+compatible: "mili,bnn-tmr"
+
+include: spi-device.yaml
+
+properties:
+  irq-gpios:
+    type: phandle-array
+    description: Inference-done interrupt GPIO

@@ -1,0 +1,50 @@
+# Mili BNN-TMR Development Board — STM32H7 + FPGA Chip Emulator
+# Phase 4 system integration target
+
+board:
+  name: "Mili DevKit v1"
+  mcu: "STM32H743VIT6"
+  mcu_freq_mhz: 480
+  accelerator: "FPGA (Xilinx Artix-7) / ASIC ES"
+
+connections:
+  host_to_chip:
+    primary: SPI1
+    pins:
+      sck:  PA5
+      miso: PA6
+      mosi: PA7
+      cs:   PA4
+      irq:  PB0   # EXTI — inference done
+    dma:
+      tx_stream: DMA1_Stream3
+      rx_stream: DMA1_Stream2
+      max_chunk_bytes: 4096
+  optional:
+    pcie: "via FMC (future)"
+    uart_debug: USART3
+
+camera:
+  interface: DCMI + I2C
+  sensor: "OV5640 (configurable)"
+  max_resolution: [640, 480]
+  default_capture: [224, 224]
+
+power:
+  input: "5V USB / 12V barrel"
+  rails:
+    mcu_3v3: 3.3
+    fpga_1v0: 1.0
+    chip_core: 0.85
+  dpm_switch_target_us: 100
+
+sram_map:
+  model_offset: 0x0000000
+  input_offset: 0x1C00000
+  output_offset: 0x1E00000
+
+acceptance:
+  e2e_latency_ms: 10
+  energy_per_inference_mj: 2
+  min_accuracy_pct: 95
+  idle_power_saving_pct: 40

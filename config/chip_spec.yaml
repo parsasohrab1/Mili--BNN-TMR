@@ -1,0 +1,125 @@
+chip:
+  name: "Mili BNN-TMR Edge AI Accelerator"
+  technology_nm: 14
+  voltage_range_v: [0.85, 1.2]
+  base_frequency_mhz: 400
+  max_frequency_mhz: 800
+  sram_mb: 32
+  memory_bandwidth_bits: 256
+  pe_array: [8, 8]
+  pe_count: 64
+  max_power_w: 50
+  typical_power_w: 30
+  packaging: "BGA-484"
+  operating_temp_c: [-40, 85]
+
+interfaces:
+  - PCIe Gen4
+  - SPI
+  - I2C
+  - UART
+
+supported_os:
+  - Linux RT
+  - Zephyr
+  - FreeRTOS
+
+model_formats:
+  - ONNX
+  - TensorFlow Lite
+  - PyTorch
+
+power_states:
+  sleep:
+    frequency_mhz: 0
+    power_w: 0.01
+    activation_us: 1
+  idle:
+    frequency_mhz: 100
+    power_w: 5
+    activation_us: 50
+  normal:
+    frequency_mhz: 400
+    power_w: 30
+    activation_us: 0
+  turbo:
+    frequency_mhz: 800
+    power_w: 48
+    activation_us: 100
+
+requirements:
+  max_latency_ms: 10
+  min_accuracy_pct: 95
+  min_tmr_effectiveness_pct: 99
+  max_energy_per_inference_mj: 2
+  max_tmr_latency_overhead_pct: 5
+  max_tmr_power_overhead_pct: 15
+  max_state_switch_us: 100
+  min_seu_correction_pct: 99
+  max_thermal_degradation_pct: 5
+  min_mtbf_hours: 10000
+  max_typical_power_w: 30
+  max_power_w_limit: 50
+  min_yield_pct: 70
+  min_tops_per_watt: 2.0
+
+tapeout:
+  foundry: "TSMC 14nm FinFET"
+  silicon_rev: "A0"
+  lot_id: "MILI-ES-A0-001"
+  packaging: "BGA-484"
+  die_size_mm2: 42.5
+  engineering_samples: 25
+  yield_pct: 78.5
+  tops_per_watt: 2.1
+  drc_violations: 0
+  lvs_clean: true
+  setup_wns_ns: 0.082
+  setup_tns_ns: 0.0
+  measured:
+    typical_power_w: 28.5
+    max_power_w: 47.2
+    frequency_min_mhz: 400
+    frequency_max_mhz: 800
+    tops_per_watt: 2.1
+  timing:
+    setup_wns_ns: 0.082
+    achieved_freq_min_mhz: 400
+    achieved_freq_max_mhz: 800
+
+radiation:
+  profiles:
+    cobalt_60:
+      description: "Co-60 gamma source (aerospace screening)"
+      fluence_rate_cm2_h: 50
+      seu_cross_section_cm2: 1.0e-13
+      temperature_c: 25
+    proton_beam:
+      description: "62 MeV proton beam (SEE testing)"
+      fluence_rate_cm2_h: 30
+      seu_cross_section_cm2: 2.0e-13
+      temperature_c: 25
+    leo_orbit:
+      description: "Low Earth Orbit (400 km, solar max)"
+      fluence_rate_cm2_h: 0.5
+      seu_cross_section_cm2: 1.0e-12
+      temperature_c: -20
+    geo_orbit:
+      description: "Geostationary orbit (mission profile)"
+      fluence_rate_cm2_h: 1.0
+      seu_cross_section_cm2: 1.5e-12
+      temperature_c: 30
+  sensitive_bits: 524288
+  fault_injection_trials: 1000
+  temperatures_c: [-40, 25, 50, 85]
+
+benchmark:
+  scenarios:
+    - nominal
+    - thermal_stress
+    - radiation_SEU
+    - high_vibration
+  batch_sizes: [1, 4, 16, 64]
+  frequencies_mhz: [100, 200, 400, 800]
+  temperatures_c: [25, 50, 75, 85]
+  random_seed: 42

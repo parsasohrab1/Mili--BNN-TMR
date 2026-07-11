@@ -1,0 +1,8 @@
+# Basic scan chain pattern — manufacturing test (placeholder)
+# 64-bit scan in, STATUS readback expected 0x05
+
+A5A5_0001
+5A5A_0005
+A5A5_0010
+FFFF_0000
+0000_0001

@@ -1,0 +1,47 @@
+# BGA-484 Package — Mili BNN-TMR Edge AI Accelerator
+# Body: 23mm × 23mm, 0.8mm pitch, 484 balls
+
+package:
+  name: BGA-484
+  body_size_mm: [23.0, 23.0]
+  ball_pitch_mm: 0.8
+  ball_count: 484
+  ball_map_rows: 22
+  ball_map_cols: 22
+  substrate_layers: 4
+  die_attach: flip_chip
+
+power_rails:
+  - name: VDD_CORE
+    voltage_v: 0.85
+    balls: [A1, A2, B1, C1, D1]
+  - name: VDD_IO
+    voltage_v: 1.2
+    balls: [A22, B22, C22]
+  - name: VSS
+    voltage_v: 0.0
+    balls: [distributed]
+
+interface_pins:
+  pcie:
+    lanes: 4
+    refclk: H11
+    balls: [G10, G11, G12, G13, H10, H12, J10, J11]
+  spi:
+    balls: [K5, K6, K7, K8]
+    signals: [SPI_CLK, SPI_MOSI, SPI_MISO, SPI_CS]
+  i2c:
+    balls: [L5, L6]
+    signals: [I2C_SCL, I2C_SDA]
+  uart:
+    balls: [M5, M6]
+    signals: [UART_TX, UART_RX]
+
+thermal:
+  theta_ja_c_per_w: 18.5
+  max_power_w: 50
+  junction_temp_max_c: 125
+
+mechanical:
+  standoff_height_mm: 0.35
+  coplanarity_mm: 0.08

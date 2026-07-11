@@ -1,0 +1,15 @@
+# Mili BNN-TMR Zephyr Driver
+
+config MILI_BNN_TMR
+    bool "Mili BNN-TMR accelerator driver"
+    depends on SPI
+    help
+      Enable driver for Mili BNN-TMR edge AI accelerator via SPI.
+
+if MILI_BNN_TMR
+
+module = MILI_BNN_TMR
+module-str = mili-bnn-tmr
+source "subsys/logging/Kconfig.template.log_config"
+
+endif

@@ -1,0 +1,29 @@
+# ATE production test limits — derived from chip_spec.yaml (post-silicon)
+
+max_typical_power_w: 30
+max_power_w: 50
+min_freq_mhz: 400
+max_freq_mhz: 800
+max_iddq_ma: 500
+max_infer_latency_ms: 10
+min_tops_per_watt: 2.0
+min_yield_pct: 70
+
+registers:
+  STATUS:     0x04
+  TMR_CTRL:   0x1C
+  TMR_STAT:   0x20
+  DPM_STAT:   0x14
+  INFER_STAT: 0x28
+  CLK_CFG:    0x18
+  TEMP_STAT:  0x44
+
+test_sequence:
+  - power_on_reset
+  - sram_init
+  - tmr_enable
+  - dpm_normal
+  - iddq
+  - infer_smoke
+  - power_typical
+  - freq_sweep

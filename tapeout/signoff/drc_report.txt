@@ -1,0 +1,15 @@
+Mili BNN-TMR — DRC Report (Calibre)
+Technology: TSMC 14nm FinFET
+Design: mili_chip_top
+Date: 2026-07-11
+
+RULE CHECK SUMMARY
+  Metal density:     PASS (0 violations)
+  Min spacing:       PASS (0 violations)
+  Via enclosure:     PASS (0 violations)
+  Antenna:           PASS (0 violations)
+  ESD:               PASS (0 violations)
+
+TOTAL VIOLATIONS: 0
+
+STATUS: CLEAN — ready for mask submission

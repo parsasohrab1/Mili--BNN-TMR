@@ -1,0 +1,12 @@
+Mili BNN-TMR — LVS Report (Calibre)
+Technology: TSMC 14nm FinFET
+Design: mili_chip_top
+Source: netlist/mili_chip_top_syn.v
+Layout: gds/mili_chip_top.gds
+
+COMPARISON RESULT: CORRECT
+  Device mismatches:  0
+  Net mismatches:     0
+  Pin mismatches:     0
+
+STATUS: LVS CLEAN

@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev,ml]"
+
+      - name: Run unit tests
+        run: pytest -q --tb=short
+
+      - name: Generate benchmark data
+        run: mili-benchmark benchmark --summary -o data/ci_benchmark.csv
+
+      - name: Compile reference model
+        run: mili-compile --reference mnist -o data/ci_mnist.mili
+
+      - name: Run E2E acceptance test
+        run: python scripts/run_e2e_demo.py --acceptance --input-size 64
+
+      - name: Run radiation validation (FR-2)
+        run: mili-radiation --acceptance --profile cobalt_60
+
+      - name: Run tape-out validation (Phase 6)
+        run: mili-tapeout --acceptance
+
+  driver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y gcc make
+
+      - name: Build and test C drivers
+        run: make -C drivers test
+
+  rtl:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Verilator
+        run: sudo apt-get update && sudo apt-get install -y verilator
+
+      - name: Run RTL unit tests
+        run: make -C sim/verilator pe systolic tmr triplex

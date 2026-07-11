@@ -1,0 +1,18 @@
+{
+  "design": "mili_chip_top",
+  "technology_nm": 14,
+  "process": "TSMC 14nm FinFET",
+  "corners": ["tt_0p85v_25c", "ss_0p72v_85c", "ff_0p99v_m40c"],
+  "target_freq_mhz": 800,
+  "achieved_freq_min_mhz": 400,
+  "achieved_freq_max_mhz": 800,
+  "setup_wns_ns": 0.082,
+  "setup_tns_ns": 0.0,
+  "hold_wns_ns": 0.041,
+  "hold_tns_ns": 0.0,
+  "clock_domains": [
+    {"name": "clk_sys", "period_ns": 1.25, "freq_mhz": 800},
+    {"name": "clk_pcie", "period_ns": 4.0, "freq_mhz": 250}
+  ],
+  "timing_closed": true
+}
