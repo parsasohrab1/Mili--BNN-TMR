@@ -1,0 +1,8 @@
+standard: DO-254
+title: Design Assurance Guidance for Airborne Electronic Hardware
+status: in_progress
+level: DAL-B
+certificate_id: ""
+notes: >
+  RTL verification complete (Verilator). TMR/SEU evidence from Phase 5.
+  Formal sign-off pending customer DAL assignment.

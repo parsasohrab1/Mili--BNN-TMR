@@ -1,0 +1,33 @@
+# Mili BNN-TMR SDK v1.0.0 Manifest
+
+name: Mili BNN-TMR SDK
+version: "1.0.0"
+vendor: Mili Semiconductor
+
+supported_os:
+  - Linux RT
+  - Zephyr
+  - FreeRTOS
+
+tools:
+  - mili-compile
+  - mili-benchmark
+  - mili-e2e
+  - mili-radiation
+  - mili-tapeout
+  - mili-release
+
+components:
+  - drivers
+  - api_python
+  - api_cpp
+  - compiler
+  - benchmark
+  - docs
+  - config
+  - examples
+
+delivery:
+  sla_days: 5
+  format: tar.gz
+  support_email: support@mili-chip.com

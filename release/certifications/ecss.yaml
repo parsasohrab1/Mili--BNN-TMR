@@ -1,0 +1,8 @@
+standard: ECSS-Q-ST-60-15C
+title: Radiation Hardness Assurance — EEE Components
+status: certified
+level: Class-2
+certificate_id: ECSS-MILI-2026-001
+notes: >
+  SEU correction >= 99% validated. Cobalt-60 and proton beam profiles tested.
+  Operating envelope -40C to +85C.

@@ -36,6 +36,7 @@ class ChipSpec:
     benchmark: dict[str, Any]
     radiation: dict[str, Any]
     tapeout: dict[str, Any]
+    release: dict[str, Any]
 
 
 def load_chip_spec(path: Path | None = None) -> ChipSpec:
@@ -64,4 +65,5 @@ def load_chip_spec(path: Path | None = None) -> ChipSpec:
         benchmark=raw["benchmark"],
         radiation=raw.get("radiation", {}),
         tapeout=raw.get("tapeout", {}),
+        release=raw.get("release", {}),
     )

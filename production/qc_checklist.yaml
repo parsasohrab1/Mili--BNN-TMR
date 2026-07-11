@@ -1,0 +1,60 @@
+# Production line QC checklist — Mili BNN-TMR BGA-484
+
+lot_prefix: MILI-PROD
+
+stages:
+  - name: wafer_cp
+    description: Wafer-level CP test
+    checks:
+      - id: qc-wf-001
+        description: ATE wafer probe — all dies
+        criteria: Yield > 70%
+        required: true
+      - id: qc-wf-002
+        description: IDDQ leakage screen
+        criteria: < 500 mA per die
+        required: true
+
+  - name: assembly
+    description: BGA-484 packaging
+    checks:
+      - id: qc-pkg-001
+        description: Die attach and wire bond
+        criteria: Visual + X-ray inspection
+        required: true
+      - id: qc-pkg-002
+        description: BGA ball attach reflow
+        criteria: IPC-A-610 Class 2
+        required: true
+
+  - name: ft
+    description: Final test
+    checks:
+      - id: qc-ft-001
+        description: Power typical <= 30 W
+        criteria: ATE power_typical step
+        required: true
+      - id: qc-ft-002
+        description: Frequency 400-800 MHz
+        criteria: ATE freq_sweep step
+        required: true
+      - id: qc-ft-003
+        description: Inference smoke test
+        criteria: INFER_DONE < 10 ms
+        required: true
+
+  - name: burn_in
+    description: Reliability screen
+    checks:
+      - id: qc-bi-001
+        description: 24h burn-in @ 85C
+        criteria: Zero functional failures
+        required: true
+
+  - name: ship
+    description: Outbound QC
+    checks:
+      - id: qc-sh-001
+        description: Label and traceability
+        criteria: Lot ID + unit serial
+        required: true

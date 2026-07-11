@@ -5,7 +5,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from mili_bnn_tmr.benchmark import generate_chip_benchmark_data, summarize_benchmark
+from mili_bnn_tmr.benchmark import (
+    benchmark_compliance_rate,
+    generate_chip_benchmark_data,
+    summarize_benchmark,
+)
 from mili_bnn_tmr.config import load_chip_spec
 
 
@@ -46,6 +50,7 @@ def main() -> None:
             print(summarize_benchmark(df))
             yes_pct = df["meets_spec"].value_counts(normalize=True).get("YES", 0) * 100
             print(f"\nCompliance rate: {yes_pct:.1f}%")
+            print(f"Compliance rate (fn): {benchmark_compliance_rate(df):.1f}%")
 
     elif args.command == "spec":
         spec = load_chip_spec()

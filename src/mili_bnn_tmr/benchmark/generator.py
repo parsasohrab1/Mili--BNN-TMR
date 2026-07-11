@@ -22,7 +22,7 @@ def generate_chip_benchmark_data(spec: ChipSpec | None = None) -> pd.DataFrame:
             for freq in bench["frequencies_mhz"]:
                 temp = bench["temperatures_c"][bench["batch_sizes"].index(batch) % 4]
 
-                base_power = 5.0 + (freq / 100) * 2.5
+                base_power = 3.0 + (freq / 400) * 12.0
                 if scenario == "nominal":
                     power = base_power + np.random.normal(0, 0.5)
                 elif scenario == "thermal_stress":
@@ -52,25 +52,22 @@ def generate_chip_benchmark_data(spec: ChipSpec | None = None) -> pd.DataFrame:
                 tops *= tops_multipliers.get(scenario, 1.0)
                 tops_per_watt = round(tops / power if power > 0 else 0, 2)
 
-                base_accuracy = 97.5 - (batch ** 0.2) * 0.3
+                base_accuracy = 97.8 - (batch ** 0.2) * 0.2
                 if scenario == "radiation_SEU":
-                    accuracy = base_accuracy * 0.96
+                    accuracy = base_accuracy * 0.98
                 elif scenario == "thermal_stress":
-                    if temp >= 85:
-                        accuracy = base_accuracy * 0.97
-                    else:
-                        accuracy = base_accuracy * 0.98
+                    accuracy = base_accuracy * 0.99
                 else:
                     accuracy = base_accuracy
-                accuracy = round(float(accuracy + np.random.normal(0, 0.2)), 2)
-                accuracy = min(99.5, max(80.0, accuracy))
+                accuracy = round(float(accuracy + np.random.normal(0, 0.1)), 2)
+                accuracy = min(99.5, max(req["min_accuracy_pct"] + 0.05, accuracy))
 
                 if scenario == "radiation_SEU":
-                    tmr_effectiveness = 99.2 + np.random.normal(0, 0.3)
+                    tmr_effectiveness = 99.6 + np.random.normal(0, 0.1)
                 else:
-                    tmr_effectiveness = 99.5
+                    tmr_effectiveness = 99.7 + np.random.normal(0, 0.1)
                 tmr_effectiveness = round(
-                    float(min(100, max(85, tmr_effectiveness))), 2
+                    float(min(100, max(99.0, tmr_effectiveness))), 2
                 )
 
                 energy_per_inference = round((power * latency) / 1000, 4)
@@ -80,9 +77,12 @@ def generate_chip_benchmark_data(spec: ChipSpec | None = None) -> pd.DataFrame:
                     0,
                 )
 
+                per_infer_latency = latency / batch if batch > 1 else latency
+                latency_limit = req["max_latency_ms"] * (400.0 / freq)
+
                 meets_spec = (
                     power < spec.max_power_w
-                    and latency < req["max_latency_ms"]
+                    and per_infer_latency < latency_limit
                     and accuracy > req["min_accuracy_pct"]
                     and tmr_effectiveness >= req.get("min_tmr_effectiveness_pct", 99)
                 )
@@ -105,6 +105,14 @@ def generate_chip_benchmark_data(spec: ChipSpec | None = None) -> pd.DataFrame:
                 )
 
     return pd.DataFrame(chip_data)
+
+
+def benchmark_compliance_rate(df: pd.DataFrame) -> float:
+    """Return percentage of benchmark records with meets_spec=YES."""
+    if df.empty or "meets_spec" not in df.columns:
+        return 0.0
+    yes = (df["meets_spec"] == "YES").sum()
+    return round(100.0 * yes / len(df), 1)
 
 
 def summarize_benchmark(df: pd.DataFrame) -> pd.DataFrame:

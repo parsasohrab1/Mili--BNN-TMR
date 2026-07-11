@@ -43,6 +43,9 @@ jobs:
       - name: Run tape-out validation (Phase 6)
         run: mili-tapeout --acceptance
 
+      - name: Run release validation (Phase 7)
+        run: mili-release --acceptance
+
   driver:
     runs-on: ubuntu-latest
     steps:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mili-bnn-tmr"
-version = "0.1.0"
+version = "1.0.0"
 description = "Edge AI Accelerator Chip with Systolic Array + TMR"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -30,6 +30,7 @@ mili-compile = "mili_bnn_tmr.compile_cli:main"
 mili-e2e = "mili_bnn_tmr.e2e_cli:main"
 mili-radiation = "mili_bnn_tmr.radiation_cli:main"
 mili-tapeout = "mili_bnn_tmr.tapeout_cli:main"
+mili-release = "mili_bnn_tmr.release_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src", "."]

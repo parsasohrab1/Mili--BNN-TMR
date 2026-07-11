@@ -38,6 +38,7 @@ htmlcov/
 *.so
 *.dll
 *.dylib
+dist/
 sim/verilator/build/
 sim/**/obj_dir/
 drivers/build/
