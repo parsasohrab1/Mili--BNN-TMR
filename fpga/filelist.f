@@ -1,0 +1,17 @@
+../rtl/mili_pkg.sv
+../rtl/pcie_pkg.sv
+../rtl/pcie_phy_gen4.sv
+../rtl/pcie_tlp.sv
+../rtl/pe.sv
+../rtl/systolic_array.sv
+../rtl/tmr_voter.sv
+../rtl/tmr_triplex.sv
+../rtl/ecc_codec.sv
+../rtl/sram_macro.sv
+../rtl/sram_bank.sv
+../rtl/sram_ctrl.sv
+../rtl/dpm_ctrl.sv
+../rtl/reg_file.sv
+../rtl/pcie_if.sv
+../rtl/spi_if.sv
+../rtl/mili_chip_top.sv

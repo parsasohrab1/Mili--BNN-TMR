@@ -23,7 +23,8 @@ result = chip.infer(input_tensor)
 | `get_tmr_stats()` | TMR disagreement / error count |
 | `run_acceptance_test()` | Phase 4 E2E acceptance |
 | `run_radiation_validation()` | Phase 5 SEU validation |
-| `get_status()` | Chip status dict |
+| `get_silicon_info()` | Silicon rev traceability (A0 → A1) |
+| `get_status()` | Chip status dict (rev, packaging, interfaces) |
 
 ### `InferenceResult`
 

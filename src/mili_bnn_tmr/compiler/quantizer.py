@@ -208,7 +208,10 @@ def quantize_with_report(
     if calibration_data is not None:
         acc = estimate_accuracy(network, calibration_data, calibration_labels)
     else:
-        acc = 97.5  # estimated when no calibration set
+        from mili_bnn_tmr.models.reference import generate_calibration
+
+        cal, labels = generate_calibration(network, num_samples=16)
+        acc = estimate_accuracy(network, cal, labels)
 
     if acc < min_accuracy_pct:
         raise ValueError(

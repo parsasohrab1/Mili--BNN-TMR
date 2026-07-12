@@ -16,6 +16,7 @@ tools:
   - mili-radiation
   - mili-tapeout
   - mili-release
+  - mili-support
 
 components:
   - drivers

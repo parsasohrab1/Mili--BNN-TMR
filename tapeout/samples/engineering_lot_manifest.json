@@ -1,0 +1,24 @@
+{
+  "lot_id": "MILI-ES-A0-001",
+  "silicon_rev": "A0",
+  "fab": "TSMC 14nm FinFET",
+  "foundry_lot": "TSM14-A0-2026Q2",
+  "assembly_site": "ASE-KH",
+  "ship_to": "IThub Engineering Lab",
+  "samples": [
+    {
+      "unit_id": "ES-A0-001",
+      "wafer_id": "W01",
+      "die_x": 0,
+      "die_y": 0,
+      "status": "shipped",
+      "fab_lot": "TSM14-A0-2026Q2",
+      "assembly_lot": "ASE-MILI-ES-A0-001",
+      "package_lot": "BGA484-MILI-ES-A0-001",
+      "tracking_id": "TRK-MILI-ES-A0-001-001",
+      "ship_date": "2026-07-01",
+      "customer_id": "IThub Engineering Lab",
+      "ate_passed": true
+    }
+  ]
+}

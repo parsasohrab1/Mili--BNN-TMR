@@ -8,7 +8,8 @@ module sram_ctrl #(
   parameter int ADDR_W  = mili_pkg::ADDR_WIDTH,
   parameter int ECC_W   = mili_pkg::ECC_WIDTH,
   parameter int SUB_CNT = mili_pkg::SUBWORD_COUNT,
-  parameter int DEPTH   = mili_pkg::SRAM_SIM_DEPTH
+  parameter int DEPTH   = mili_pkg::SRAM_SIM_DEPTH,
+  parameter int READ_LATENCY = 2
 ) (
   input  logic                   clk,
   input  logic                   rst_n,
@@ -27,8 +28,12 @@ module sram_ctrl #(
   logic [ECC_W*SUB_CNT-1:0]       bank_recc, bank_wecc;
   logic [DATA_W-1:0]              decoded_data;
   logic                           any_corrected, any_uncorr;
+  logic                           bank_rdata_valid;
 
-  sram_bank #(.DATA_W(DATA_W), .ECC_W(ECC_W*SUB_CNT), .ADDR_W(ADDR_W), .DEPTH(DEPTH)) u_bank (
+  sram_bank #(
+    .DATA_W(DATA_W), .ECC_W(ECC_W*SUB_CNT), .ADDR_W(ADDR_W),
+    .DEPTH(DEPTH), .READ_LATENCY(READ_LATENCY)
+  ) u_bank (
     .clk   (clk),
     .cs    (req),
     .we    (we),
@@ -36,7 +41,8 @@ module sram_ctrl #(
     .wdata (wdata),
     .wECC  (bank_wecc),
     .rdata (bank_rdata),
-    .rECC  (bank_recc)
+    .rECC  (bank_recc),
+    .rdata_valid(bank_rdata_valid)
   );
 
   // Per-subword ECC encode on write, decode on read
@@ -51,7 +57,7 @@ module sram_ctrl #(
       ecc_codec u_enc (
         .data_in       (we ? wdata[s*64 +: 64] : bank_rdata[s*64 +: 64]),
         .ecc_in        (bank_recc[s*ECC_W +: ECC_W]),
-        .decode_en     (req && !we),
+        .decode_en     ((req && !we) || (pending && !we && bank_rdata_valid)),
         .data_out      (decoded_data[s*64 +: 64]),
         .ecc_out       (enc_ecc),
         .corrected     (corrected_vec[s]),
@@ -78,13 +84,15 @@ module sram_ctrl #(
       if (req && !pending) begin
         pending <= 1'b1;
       end else if (pending) begin
-        ack     <= 1'b1;
-        pending <= 1'b0;
-        rdata   <= decoded_data;
-        if (any_corrected)
-          ecc_corr_cnt <= ecc_corr_cnt + 16'd1;
-        if (any_uncorr)
-          ecc_uncorr_cnt <= ecc_uncorr_cnt + 16'd1;
+        if (we || bank_rdata_valid) begin
+          ack     <= 1'b1;
+          pending <= 1'b0;
+          rdata   <= decoded_data;
+          if (any_corrected)
+            ecc_corr_cnt <= ecc_corr_cnt + 16'd1;
+          if (any_uncorr)
+            ecc_uncorr_cnt <= ecc_uncorr_cnt + 16'd1;
+        end
       end
     end
   end

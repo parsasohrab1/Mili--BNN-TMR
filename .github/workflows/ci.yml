@@ -25,14 +25,19 @@ jobs:
         run: |
           pip install -e ".[dev,ml]"
 
-      - name: Run unit tests
-        run: pytest -q --tb=short
+      - name: Run unit tests with coverage
+        run: pytest -q --tb=short --cov=mili_bnn_tmr --cov=api --cov-report=json:coverage.json
 
       - name: Generate benchmark data
         run: mili-benchmark benchmark --summary -o data/ci_benchmark.csv
 
-      - name: Compile reference model
-        run: mili-compile --reference mnist -o data/ci_mnist.mili
+      - name: Ensure reference MNIST model in repo
+        run: |
+          if [ ! -f data/mnist.mili ]; then
+            mili-compile --reference mnist -o data/mnist.mili
+          fi
+          test -f data/mnist.mili
+          mili-compile --reference mnist -o data/ci_mnist.mili
 
       - name: Run E2E acceptance test
         run: python scripts/run_e2e_demo.py --acceptance --input-size 64
@@ -59,12 +64,39 @@ jobs:
 
   rtl:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Verilator
         run: sudo apt-get update && sudo apt-get install -y verilator
 
-      - name: Run RTL unit tests
-        run: make -C sim/verilator pe systolic tmr triplex
+      - name: RTL signoff gate (Verilator)
+        run: bash sim/verilator/signoff_gate.sh
+
+      - name: Tape-out signoff gate
+        run: |
+          pip install -e ".[dev]"
+          python -c "from mili_bnn_tmr.tapeout import SignoffRunner; r=SignoffRunner().run_signoff(); assert r.passed, r"
+
+  zephyr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zephyr SDK setup
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          sdk-version: "0.16.8"
+          toolchains: host
+          west-init-args: -o=--always-update
+          west-update-args: -o=--fetch-full-hierarchy
+
+      - name: Validate devicetree binding
+        run: |
+          test -f drivers/zephyr/dts/bindings/mili,bnn-tmr.yaml
+          grep -q 'compatible: "mili,bnn-tmr"' drivers/zephyr/dts/bindings/mili,bnn-tmr.yaml
+
+      - name: Build Zephyr sample app
+        run: |
+          west build -b native_sim zephyr_app \
+            -- -DZEPHYR_EXTRA_MODULES=$GITHUB_WORKSPACE/drivers/zephyr

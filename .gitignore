@@ -14,7 +14,9 @@ env/
 # Data & outputs
 data/*.csv
 data/*.parquet
+data/seu_log.json
 !data/.gitkeep
+!data/*.mili
 
 # IDE
 .idea/
@@ -29,9 +31,12 @@ Thumbs.db
 # Test & coverage
 .pytest_cache/
 .coverage
+coverage.json
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+support/tickets/*.json
+!support/tickets/.gitkeep
 
 # Build artifacts
 *.o

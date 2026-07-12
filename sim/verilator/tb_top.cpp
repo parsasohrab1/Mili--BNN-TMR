@@ -41,6 +41,9 @@ int main(int argc, char** argv) {
 
     dut.rst_n = 0;
     dut.pcie_rx_valid = 0;
+    dut.pcie_refclk = 1;
+    dut.pcie_rxp = 0;
+    dut.pcie_rxn = 0xF;
     dut.spi_cs_n = 1;
     dut.uart_rx = 1;
     for (int i = 0; i < 10; i++) tick(&dut);

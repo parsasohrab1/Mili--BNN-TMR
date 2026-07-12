@@ -1,5 +1,5 @@
 # BGA-484 Package — Mili BNN-TMR Edge AI Accelerator
-# Body: 23mm × 23mm, 0.8mm pitch, 484 balls
+# Auto-generated — scripts/gen_bga484_pinout.py
 
 package:
   name: BGA-484
@@ -8,40 +8,517 @@ package:
   ball_count: 484
   ball_map_rows: 22
   ball_map_cols: 22
+  row_labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'T', 'U', 'V', 'W', 'Y', 'AA', 'AB']
   substrate_layers: 4
   die_attach: flip_chip
+
+land_pattern:
+  file: bga484_land_pattern.csv
+  ball_diameter_mm: 0.45
+  mask_expansion_mm: 0.05
 
 power_rails:
   - name: VDD_CORE
     voltage_v: 0.85
-    balls: [A1, A2, B1, C1, D1]
   - name: VDD_IO
     voltage_v: 1.2
-    balls: [A22, B22, C22]
   - name: VSS
     voltage_v: 0.0
-    balls: [distributed]
 
 interface_pins:
   pcie:
+    gen: 4
     lanes: 4
     refclk: H11
-    balls: [G10, G11, G12, G13, H10, H12, J10, J11]
   spi:
+    signals: [SPI_CLK, SPI_MOSI, SPI_MISO, SPI_CS_N]
     balls: [K5, K6, K7, K8]
-    signals: [SPI_CLK, SPI_MOSI, SPI_MISO, SPI_CS]
   i2c:
-    balls: [L5, L6]
-    signals: [I2C_SCL, I2C_SDA]
   uart:
-    balls: [M5, M6]
-    signals: [UART_TX, UART_RX]
+  jtag:
 
-thermal:
-  theta_ja_c_per_w: 18.5
-  max_power_w: 50
-  junction_temp_max_c: 125
-
-mechanical:
-  standoff_height_mm: 0.35
-  coplanarity_mm: 0.08
+balls:  # 484 entries
+  A1: {signal: VDD_CORE, type: power}
+  A2: {signal: VDD_IO, type: power}
+  A3: {signal: VSS, type: ground}
+  A4: {signal: VDD_CORE, type: power}
+  A5: {signal: VDD_IO, type: power}
+  A6: {signal: VSS, type: ground}
+  A7: {signal: VDD_CORE, type: power}
+  A8: {signal: VDD_IO, type: power}
+  A9: {signal: VSS, type: ground}
+  A10: {signal: VDD_CORE, type: power}
+  A11: {signal: VDD_IO, type: power}
+  A12: {signal: VSS, type: ground}
+  A13: {signal: VDD_CORE, type: power}
+  A14: {signal: VDD_IO, type: power}
+  A15: {signal: VSS, type: ground}
+  A16: {signal: VDD_CORE, type: power}
+  A17: {signal: VDD_IO, type: power}
+  A18: {signal: VSS, type: ground}
+  A19: {signal: VDD_CORE, type: power}
+  A20: {signal: VDD_IO, type: power}
+  A21: {signal: VSS, type: ground}
+  A22: {signal: VDD_CORE, type: power}
+  B1: {signal: VDD_IO, type: power}
+  B2: {signal: VSS, type: ground}
+  B3: {signal: VDD_CORE, type: power}
+  B4: {signal: VDD_IO, type: power}
+  B5: {signal: VSS, type: ground}
+  B6: {signal: VDD_CORE, type: power}
+  B7: {signal: VDD_IO, type: power}
+  B8: {signal: VSS, type: ground}
+  B9: {signal: VDD_CORE, type: power}
+  B10: {signal: VDD_IO, type: power}
+  B11: {signal: VSS, type: ground}
+  B12: {signal: VDD_CORE, type: power}
+  B13: {signal: VDD_IO, type: power}
+  B14: {signal: VSS, type: ground}
+  B15: {signal: VDD_CORE, type: power}
+  B16: {signal: VDD_IO, type: power}
+  B17: {signal: VSS, type: ground}
+  B18: {signal: VDD_CORE, type: power}
+  B19: {signal: VDD_IO, type: power}
+  B20: {signal: VSS, type: ground}
+  B21: {signal: VDD_CORE, type: power}
+  B22: {signal: VDD_IO, type: power}
+  C1: {signal: VSS, type: ground}
+  C2: {signal: VDD_CORE, type: power}
+  C3: {signal: NC, type: nc}
+  C4: {signal: VSS, type: ground}
+  C5: {signal: NC, type: nc}
+  C6: {signal: VDD_CORE, type: power}
+  C7: {signal: NC, type: nc}
+  C8: {signal: NC, type: nc}
+  C9: {signal: VSS, type: ground}
+  C10: {signal: NC, type: nc}
+  C11: {signal: NC, type: nc}
+  C12: {signal: NC, type: nc}
+  C13: {signal: VDD_CORE, type: power}
+  C14: {signal: VSS, type: ground}
+  C15: {signal: NC, type: nc}
+  C16: {signal: NC, type: nc}
+  C17: {signal: NC, type: nc}
+  C18: {signal: NC, type: nc}
+  C19: {signal: VSS, type: ground}
+  C20: {signal: VDD_CORE, type: power}
+  C21: {signal: VDD_IO, type: power}
+  C22: {signal: VSS, type: ground}
+  D1: {signal: VDD_CORE, type: power}
+  D2: {signal: VDD_IO, type: power}
+  D3: {signal: VSS, type: ground}
+  D4: {signal: NC, type: nc}
+  D5: {signal: VDD_CORE, type: power}
+  D6: {signal: NC, type: nc}
+  D7: {signal: NC, type: nc}
+  D8: {signal: VSS, type: ground}
+  D9: {signal: NC, type: nc}
+  D10: {signal: NC, type: nc}
+  D11: {signal: NC, type: nc}
+  D12: {signal: VDD_CORE, type: power}
+  D13: {signal: VSS, type: ground}
+  D14: {signal: NC, type: nc}
+  D15: {signal: NC, type: nc}
+  D16: {signal: NC, type: nc}
+  D17: {signal: NC, type: nc}
+  D18: {signal: VSS, type: ground}
+  D19: {signal: VDD_CORE, type: power}
+  D20: {signal: NC, type: nc}
+  D21: {signal: VSS, type: ground}
+  D22: {signal: VDD_CORE, type: power}
+  E1: {signal: VDD_IO, type: power}
+  E2: {signal: VSS, type: ground}
+  E3: {signal: NC, type: nc}
+  E4: {signal: VDD_CORE, type: power}
+  E5: {signal: NC, type: nc}
+  E6: {signal: NC, type: nc}
+  E7: {signal: VSS, type: ground}
+  E8: {signal: NC, type: nc}
+  E9: {signal: NC, type: nc}
+  E10: {signal: NC, type: nc}
+  E11: {signal: VDD_CORE, type: power}
+  E12: {signal: VSS, type: ground}
+  E13: {signal: NC, type: nc}
+  E14: {signal: NC, type: nc}
+  E15: {signal: NC, type: nc}
+  E16: {signal: NC, type: nc}
+  E17: {signal: VSS, type: ground}
+  E18: {signal: VDD_CORE, type: power}
+  E19: {signal: NC, type: nc}
+  E20: {signal: NC, type: nc}
+  E21: {signal: VDD_CORE, type: power}
+  E22: {signal: VDD_IO, type: power}
+  F1: {signal: VSS, type: ground}
+  F2: {signal: VDD_CORE, type: power}
+  F3: {signal: VDD_CORE, type: power}
+  F4: {signal: NC, type: nc}
+  F5: {signal: NC, type: nc}
+  F6: {signal: VSS, type: ground}
+  F7: {signal: NC, type: nc}
+  F8: {signal: NC, type: nc}
+  F9: {signal: NC, type: nc}
+  F10: {signal: VDD_CORE, type: power}
+  F11: {signal: VSS, type: ground}
+  F12: {signal: NC, type: nc}
+  F13: {signal: NC, type: nc}
+  F14: {signal: NC, type: nc}
+  F15: {signal: NC, type: nc}
+  F16: {signal: VSS, type: ground}
+  F17: {signal: VDD_CORE, type: power}
+  F18: {signal: NC, type: nc}
+  F19: {signal: NC, type: nc}
+  F20: {signal: NC, type: nc}
+  F21: {signal: VDD_IO, type: power}
+  F22: {signal: VSS, type: ground}
+  G1: {signal: VDD_CORE, type: power}
+  G2: {signal: VDD_IO, type: power}
+  G3: {signal: NC, type: nc}
+  G4: {signal: NC, type: nc}
+  G5: {signal: VSS, type: ground}
+  G6: {signal: NC, type: nc}
+  G7: {signal: NC, type: nc}
+  G8: {signal: NC, type: nc}
+  G9: {signal: VDD_CORE, type: power}
+  G10: {signal: PCIE_RX0_P, type: io}
+  G11: {signal: PCIE_REFCLK_P, type: io}
+  G12: {signal: PCIE_RX0_N, type: io}
+  G13: {signal: PCIE_TX0_P, type: io}
+  G14: {signal: NC, type: nc}
+  G15: {signal: VSS, type: ground}
+  G16: {signal: VDD_CORE, type: power}
+  G17: {signal: NC, type: nc}
+  G18: {signal: NC, type: nc}
+  G19: {signal: NC, type: nc}
+  G20: {signal: VSS, type: ground}
+  G21: {signal: VSS, type: ground}
+  G22: {signal: VDD_CORE, type: power}
+  H1: {signal: VDD_IO, type: power}
+  H2: {signal: VSS, type: ground}
+  H3: {signal: NC, type: nc}
+  H4: {signal: VSS, type: ground}
+  H5: {signal: NC, type: nc}
+  H6: {signal: NC, type: nc}
+  H7: {signal: NC, type: nc}
+  H8: {signal: VDD_CORE, type: power}
+  H9: {signal: VSS, type: ground}
+  H10: {signal: PCIE_RX1_P, type: io}
+  H11: {signal: PCIE_REFCLK_N, type: io}
+  H12: {signal: PCIE_RX1_N, type: io}
+  H13: {signal: PCIE_TX0_N, type: io}
+  H14: {signal: VSS, type: ground}
+  H15: {signal: VDD_CORE, type: power}
+  H16: {signal: NC, type: nc}
+  H17: {signal: NC, type: nc}
+  H18: {signal: NC, type: nc}
+  H19: {signal: VSS, type: ground}
+  H20: {signal: NC, type: nc}
+  H21: {signal: VDD_CORE, type: power}
+  H22: {signal: VDD_IO, type: power}
+  J1: {signal: VSS, type: ground}
+  J2: {signal: VDD_CORE, type: power}
+  J3: {signal: VSS, type: ground}
+  J4: {signal: NC, type: nc}
+  J5: {signal: NC, type: nc}
+  J6: {signal: NC, type: nc}
+  J7: {signal: VDD_CORE, type: power}
+  J8: {signal: VSS, type: ground}
+  J9: {signal: NC, type: nc}
+  J10: {signal: PCIE_RX2_P, type: io}
+  J11: {signal: PCIE_TX1_P, type: io}
+  J12: {signal: PCIE_RX2_N, type: io}
+  J13: {signal: PCIE_TX1_N, type: io}
+  J14: {signal: VDD_CORE, type: power}
+  J15: {signal: NC, type: nc}
+  J16: {signal: NC, type: nc}
+  J17: {signal: NC, type: nc}
+  J18: {signal: VSS, type: ground}
+  J19: {signal: NC, type: nc}
+  J20: {signal: NC, type: nc}
+  J21: {signal: VDD_IO, type: power}
+  J22: {signal: VSS, type: ground}
+  K1: {signal: VDD_CORE, type: power}
+  K2: {signal: VDD_IO, type: power}
+  K3: {signal: NC, type: nc}
+  K4: {signal: NC, type: nc}
+  K5: {signal: SPI_CLK, type: io}
+  K6: {signal: SPI_MOSI, type: io}
+  K7: {signal: SPI_MISO, type: io}
+  K8: {signal: SPI_CS_N, type: io}
+  K9: {signal: NC, type: nc}
+  K10: {signal: NC, type: nc}
+  K11: {signal: NC, type: nc}
+  K12: {signal: VSS, type: ground}
+  K13: {signal: VDD_CORE, type: power}
+  K14: {signal: NC, type: nc}
+  K15: {signal: NC, type: nc}
+  K16: {signal: NC, type: nc}
+  K17: {signal: VSS, type: ground}
+  K18: {signal: NC, type: nc}
+  K19: {signal: NC, type: nc}
+  K20: {signal: VDD_CORE, type: power}
+  K21: {signal: VSS, type: ground}
+  K22: {signal: VDD_CORE, type: power}
+  L1: {signal: VDD_IO, type: power}
+  L2: {signal: VSS, type: ground}
+  L3: {signal: NC, type: nc}
+  L4: {signal: NC, type: nc}
+  L5: {signal: I2C_SCL, type: io}
+  L6: {signal: I2C_SDA, type: io}
+  L7: {signal: NC, type: nc}
+  L8: {signal: NC, type: nc}
+  L9: {signal: NC, type: nc}
+  L10: {signal: NC, type: nc}
+  L11: {signal: VSS, type: ground}
+  L12: {signal: VDD_CORE, type: power}
+  L13: {signal: NC, type: nc}
+  L14: {signal: NC, type: nc}
+  L15: {signal: NC, type: nc}
+  L16: {signal: VSS, type: ground}
+  L17: {signal: NC, type: nc}
+  L18: {signal: NC, type: nc}
+  L19: {signal: VDD_CORE, type: power}
+  L20: {signal: NC, type: nc}
+  L21: {signal: VDD_CORE, type: power}
+  L22: {signal: VDD_IO, type: power}
+  M1: {signal: VSS, type: ground}
+  M2: {signal: VDD_CORE, type: power}
+  M3: {signal: NC, type: nc}
+  M4: {signal: VDD_CORE, type: power}
+  M5: {signal: UART_TX, type: io}
+  M6: {signal: UART_RX, type: io}
+  M7: {signal: NC, type: nc}
+  M8: {signal: NC, type: nc}
+  M9: {signal: NC, type: nc}
+  M10: {signal: VSS, type: ground}
+  M11: {signal: VDD_CORE, type: power}
+  M12: {signal: NC, type: nc}
+  M13: {signal: NC, type: nc}
+  M14: {signal: NC, type: nc}
+  M15: {signal: VSS, type: ground}
+  M16: {signal: NC, type: nc}
+  M17: {signal: NC, type: nc}
+  M18: {signal: VDD_CORE, type: power}
+  M19: {signal: NC, type: nc}
+  M20: {signal: VSS, type: ground}
+  M21: {signal: VDD_IO, type: power}
+  M22: {signal: VSS, type: ground}
+  N1: {signal: VDD_CORE, type: power}
+  N2: {signal: VDD_IO, type: power}
+  N3: {signal: VDD_CORE, type: power}
+  N4: {signal: VSS, type: ground}
+  N5: {signal: JTAG_TCK, type: io}
+  N6: {signal: JTAG_TMS, type: io}
+  N7: {signal: JTAG_TDI, type: io}
+  N8: {signal: JTAG_TDO, type: io}
+  N9: {signal: VSS, type: ground}
+  N10: {signal: VDD_CORE, type: power}
+  N11: {signal: NC, type: nc}
+  N12: {signal: NC, type: nc}
+  N13: {signal: NC, type: nc}
+  N14: {signal: VSS, type: ground}
+  N15: {signal: NC, type: nc}
+  N16: {signal: NC, type: nc}
+  N17: {signal: VDD_CORE, type: power}
+  N18: {signal: NC, type: nc}
+  N19: {signal: VSS, type: ground}
+  N20: {signal: NC, type: nc}
+  N21: {signal: VSS, type: ground}
+  N22: {signal: VDD_CORE, type: power}
+  P1: {signal: VDD_IO, type: power}
+  P2: {signal: VSS, type: ground}
+  P3: {signal: VSS, type: ground}
+  P4: {signal: NC, type: nc}
+  P5: {signal: NC, type: nc}
+  P6: {signal: NC, type: nc}
+  P7: {signal: NC, type: nc}
+  P8: {signal: VSS, type: ground}
+  P9: {signal: VDD_CORE, type: power}
+  P10: {signal: NC, type: nc}
+  P11: {signal: CLK_SYS, type: io}
+  P12: {signal: RST_N, type: io}
+  P13: {signal: VSS, type: ground}
+  P14: {signal: NC, type: nc}
+  P15: {signal: NC, type: nc}
+  P16: {signal: VDD_CORE, type: power}
+  P17: {signal: NC, type: nc}
+  P18: {signal: VSS, type: ground}
+  P19: {signal: NC, type: nc}
+  P20: {signal: NC, type: nc}
+  P21: {signal: VDD_CORE, type: power}
+  P22: {signal: VDD_IO, type: power}
+  R1: {signal: VSS, type: ground}
+  R2: {signal: VDD_CORE, type: power}
+  R3: {signal: NC, type: nc}
+  R4: {signal: NC, type: nc}
+  R5: {signal: NC, type: nc}
+  R6: {signal: NC, type: nc}
+  R7: {signal: VSS, type: ground}
+  R8: {signal: VDD_CORE, type: power}
+  R9: {signal: NC, type: nc}
+  R10: {signal: NC, type: nc}
+  R11: {signal: IRQ_HOST, type: io}
+  R12: {signal: VSS, type: ground}
+  R13: {signal: NC, type: nc}
+  R14: {signal: NC, type: nc}
+  R15: {signal: VDD_CORE, type: power}
+  R16: {signal: NC, type: nc}
+  R17: {signal: VSS, type: ground}
+  R18: {signal: NC, type: nc}
+  R19: {signal: NC, type: nc}
+  R20: {signal: NC, type: nc}
+  R21: {signal: VDD_IO, type: power}
+  R22: {signal: VSS, type: ground}
+  T1: {signal: VDD_CORE, type: power}
+  T2: {signal: VDD_IO, type: power}
+  T3: {signal: NC, type: nc}
+  T4: {signal: NC, type: nc}
+  T5: {signal: NC, type: nc}
+  T6: {signal: VSS, type: ground}
+  T7: {signal: VDD_CORE, type: power}
+  T8: {signal: NC, type: nc}
+  T9: {signal: NC, type: nc}
+  T10: {signal: NC, type: nc}
+  T11: {signal: VSS, type: ground}
+  T12: {signal: NC, type: nc}
+  T13: {signal: NC, type: nc}
+  T14: {signal: VDD_CORE, type: power}
+  T15: {signal: NC, type: nc}
+  T16: {signal: VSS, type: ground}
+  T17: {signal: NC, type: nc}
+  T18: {signal: NC, type: nc}
+  T19: {signal: NC, type: nc}
+  T20: {signal: NC, type: nc}
+  T21: {signal: VSS, type: ground}
+  T22: {signal: VDD_CORE, type: power}
+  U1: {signal: VDD_IO, type: power}
+  U2: {signal: VSS, type: ground}
+  U3: {signal: NC, type: nc}
+  U4: {signal: NC, type: nc}
+  U5: {signal: VSS, type: ground}
+  U6: {signal: VDD_CORE, type: power}
+  U7: {signal: NC, type: nc}
+  U8: {signal: NC, type: nc}
+  U9: {signal: NC, type: nc}
+  U10: {signal: VSS, type: ground}
+  U11: {signal: NC, type: nc}
+  U12: {signal: NC, type: nc}
+  U13: {signal: VDD_CORE, type: power}
+  U14: {signal: NC, type: nc}
+  U15: {signal: VSS, type: ground}
+  U16: {signal: NC, type: nc}
+  U17: {signal: NC, type: nc}
+  U18: {signal: NC, type: nc}
+  U19: {signal: NC, type: nc}
+  U20: {signal: VSS, type: ground}
+  U21: {signal: VDD_CORE, type: power}
+  U22: {signal: VDD_IO, type: power}
+  V1: {signal: VSS, type: ground}
+  V2: {signal: VDD_CORE, type: power}
+  V3: {signal: NC, type: nc}
+  V4: {signal: VSS, type: ground}
+  V5: {signal: VDD_CORE, type: power}
+  V6: {signal: NC, type: nc}
+  V7: {signal: NC, type: nc}
+  V8: {signal: NC, type: nc}
+  V9: {signal: VSS, type: ground}
+  V10: {signal: NC, type: nc}
+  V11: {signal: NC, type: nc}
+  V12: {signal: VDD_CORE, type: power}
+  V13: {signal: NC, type: nc}
+  V14: {signal: VSS, type: ground}
+  V15: {signal: NC, type: nc}
+  V16: {signal: NC, type: nc}
+  V17: {signal: NC, type: nc}
+  V18: {signal: NC, type: nc}
+  V19: {signal: VSS, type: ground}
+  V20: {signal: NC, type: nc}
+  V21: {signal: VDD_IO, type: power}
+  V22: {signal: VSS, type: ground}
+  W1: {signal: VDD_CORE, type: power}
+  W2: {signal: VDD_IO, type: power}
+  W3: {signal: VSS, type: ground}
+  W4: {signal: VDD_CORE, type: power}
+  W5: {signal: NC, type: nc}
+  W6: {signal: NC, type: nc}
+  W7: {signal: NC, type: nc}
+  W8: {signal: VSS, type: ground}
+  W9: {signal: NC, type: nc}
+  W10: {signal: NC, type: nc}
+  W11: {signal: VDD_CORE, type: power}
+  W12: {signal: NC, type: nc}
+  W13: {signal: VSS, type: ground}
+  W14: {signal: NC, type: nc}
+  W15: {signal: NC, type: nc}
+  W16: {signal: NC, type: nc}
+  W17: {signal: NC, type: nc}
+  W18: {signal: VSS, type: ground}
+  W19: {signal: NC, type: nc}
+  W20: {signal: NC, type: nc}
+  W21: {signal: VSS, type: ground}
+  W22: {signal: VDD_CORE, type: power}
+  Y1: {signal: VDD_IO, type: power}
+  Y2: {signal: VSS, type: ground}
+  Y3: {signal: VDD_CORE, type: power}
+  Y4: {signal: NC, type: nc}
+  Y5: {signal: NC, type: nc}
+  Y6: {signal: NC, type: nc}
+  Y7: {signal: VSS, type: ground}
+  Y8: {signal: NC, type: nc}
+  Y9: {signal: NC, type: nc}
+  Y10: {signal: VDD_CORE, type: power}
+  Y11: {signal: NC, type: nc}
+  Y12: {signal: VSS, type: ground}
+  Y13: {signal: NC, type: nc}
+  Y14: {signal: NC, type: nc}
+  Y15: {signal: NC, type: nc}
+  Y16: {signal: NC, type: nc}
+  Y17: {signal: VSS, type: ground}
+  Y18: {signal: NC, type: nc}
+  Y19: {signal: NC, type: nc}
+  Y20: {signal: NC, type: nc}
+  Y21: {signal: VDD_CORE, type: power}
+  Y22: {signal: VDD_IO, type: power}
+  AA1: {signal: VSS, type: ground}
+  AA2: {signal: VDD_CORE, type: power}
+  AA3: {signal: VDD_IO, type: power}
+  AA4: {signal: VSS, type: ground}
+  AA5: {signal: VDD_CORE, type: power}
+  AA6: {signal: VDD_IO, type: power}
+  AA7: {signal: VSS, type: ground}
+  AA8: {signal: VDD_CORE, type: power}
+  AA9: {signal: VDD_IO, type: power}
+  AA10: {signal: VSS, type: ground}
+  AA11: {signal: VDD_CORE, type: power}
+  AA12: {signal: VDD_IO, type: power}
+  AA13: {signal: VSS, type: ground}
+  AA14: {signal: VDD_CORE, type: power}
+  AA15: {signal: VDD_IO, type: power}
+  AA16: {signal: VSS, type: ground}
+  AA17: {signal: VDD_CORE, type: power}
+  AA18: {signal: VDD_IO, type: power}
+  AA19: {signal: VSS, type: ground}
+  AA20: {signal: VDD_CORE, type: power}
+  AA21: {signal: VDD_IO, type: power}
+  AA22: {signal: VSS, type: ground}
+  AB1: {signal: VDD_CORE, type: power}
+  AB2: {signal: VDD_IO, type: power}
+  AB3: {signal: VSS, type: ground}
+  AB4: {signal: VDD_CORE, type: power}
+  AB5: {signal: VDD_IO, type: power}
+  AB6: {signal: VSS, type: ground}
+  AB7: {signal: VDD_CORE, type: power}
+  AB8: {signal: VDD_IO, type: power}
+  AB9: {signal: VSS, type: ground}
+  AB10: {signal: VDD_CORE, type: power}
+  AB11: {signal: VDD_IO, type: power}
+  AB12: {signal: VSS, type: ground}
+  AB13: {signal: VDD_CORE, type: power}
+  AB14: {signal: VDD_IO, type: power}
+  AB15: {signal: VSS, type: ground}
+  AB16: {signal: VDD_CORE, type: power}
+  AB17: {signal: VDD_IO, type: power}
+  AB18: {signal: VSS, type: ground}
+  AB19: {signal: VDD_CORE, type: power}
+  AB20: {signal: VDD_IO, type: power}
+  AB21: {signal: VSS, type: ground}
+  AB22: {signal: VDD_CORE, type: power}

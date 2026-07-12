@@ -68,12 +68,8 @@ class RadiationValidator:
         return self._monitor.stats().correction_rate_pct
 
     def run_hardware_fault_injection(self, num_trials: int = 30) -> float:
-        if self._backend is None:
-            return self.run_fault_injection_campaign(num_trials=num_trials)
-
-        from mili_bnn_tmr.integration.sim_backend import SimulatorBackend
-
-        if not isinstance(self._backend, SimulatorBackend):
+        """CSR fault injection on production backend (FPGA/PCIe/STM32/simulator)."""
+        if self._backend is None or not hasattr(self._backend, "inject_tmr_fault"):
             return self.run_fault_injection_campaign(num_trials=num_trials)
 
         corrected = 0
@@ -83,14 +79,14 @@ class RadiationValidator:
             self._backend.start_inference(1)
             self._backend.wait_inference_done()
             stats = self._backend.get_tmr_stats()
-            detected = stats["disagree"]
-            corr = detected  # single-lane fault always corrected by majority
+            detected = bool(stats.get("disagree"))
+            corr = detected
             self._monitor.log_hardware_event(fault_lane, detected, corr)
             if corr:
                 corrected += 1
             self._backend.clear_tmr_fault()
 
-        return 100.0 * corrected / num_trials
+        return round(100.0 * corrected / num_trials, 2)
 
     def measure_tmr_overhead(
         self,

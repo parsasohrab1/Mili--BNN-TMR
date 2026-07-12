@@ -40,6 +40,6 @@ def test_summarize_benchmark():
 
 
 def test_reproducible_with_seed():
-    df1 = generate_chip_benchmark_data()
-    df2 = generate_chip_benchmark_data()
+    df1 = generate_chip_benchmark_data(mode="synthetic")
+    df2 = generate_chip_benchmark_data(mode="synthetic")
     pd.testing.assert_frame_equal(df1, df2)

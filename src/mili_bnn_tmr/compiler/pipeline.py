@@ -8,6 +8,8 @@ from pathlib import Path
 from mili_bnn_tmr.compiler.ir import LayerIR, NetworkIR
 from mili_bnn_tmr.compiler.mili_format import MiliModel, read_mili, write_mili
 from mili_bnn_tmr.compiler.onnx_compiler import parse_onnx
+from mili_bnn_tmr.compiler.pytorch_compiler import parse_pytorch
+from mili_bnn_tmr.compiler.tflite_compiler import parse_tflite
 from mili_bnn_tmr.compiler.optimizer import CompilePlan, optimize
 from mili_bnn_tmr.compiler.quantizer import QuantizationReport, quantize_with_report
 from mili_bnn_tmr.config import ChipSpec, load_chip_spec
@@ -84,6 +86,63 @@ def compile_onnx(
         calibration_labels=calibration_labels,
         min_accuracy_pct=min_accuracy_pct,
     )
+
+
+def compile_tflite(
+    tflite_path: str | Path,
+    output: str | Path,
+    batch_size: int = 1,
+    calibration_data=None,
+    calibration_labels=None,
+    min_accuracy_pct: float = 95.0,
+) -> CompileResult:
+    """Compile TFLite model to .mili binary."""
+    network = parse_tflite(tflite_path)
+    return compile_network(
+        network,
+        output,
+        batch_size=batch_size,
+        calibration_data=calibration_data,
+        calibration_labels=calibration_labels,
+        min_accuracy_pct=min_accuracy_pct,
+    )
+
+
+def compile_pytorch(
+    pt_path: str | Path,
+    output: str | Path,
+    batch_size: int = 1,
+    calibration_data=None,
+    calibration_labels=None,
+    min_accuracy_pct: float = 95.0,
+) -> CompileResult:
+    """Compile PyTorch .pt model to .mili binary."""
+    network = parse_pytorch(pt_path)
+    return compile_network(
+        network,
+        output,
+        batch_size=batch_size,
+        calibration_data=calibration_data,
+        calibration_labels=calibration_labels,
+        min_accuracy_pct=min_accuracy_pct,
+    )
+
+
+def compile_model(
+    input_path: str | Path,
+    output: str | Path,
+    **kwargs,
+) -> CompileResult:
+    """Compile by file extension (.onnx / .tflite / .pt)."""
+    path = Path(input_path)
+    ext = path.suffix.lower()
+    if ext == ".onnx":
+        return compile_onnx(path, output, **kwargs)
+    if ext in (".tflite", ".lite"):
+        return compile_tflite(path, output, **kwargs)
+    if ext == ".pt":
+        return compile_pytorch(path, output, **kwargs)
+    raise ValueError(f"Unsupported model format: {ext}")
 
 
 def load_compiled(path: str | Path) -> MiliModel:

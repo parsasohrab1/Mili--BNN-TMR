@@ -2,14 +2,53 @@
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
 import pandas as pd
 
 from mili_bnn_tmr.config import ChipSpec, load_chip_spec
 
 
-def generate_chip_benchmark_data(spec: ChipSpec | None = None) -> pd.DataFrame:
-    """Generate chip benchmark records across scenarios and operating points."""
+def generate_chip_benchmark_data(
+    spec: ChipSpec | None = None,
+    mode: str | None = None,
+    measured_accuracy_pct: float | None = None,
+) -> pd.DataFrame:
+    """
+    Generate chip benchmark records.
+
+    mode:
+      - auto: MILI_BENCH_MODE env or 'synthetic'
+      - lab: measure via hardware backend
+      - synthetic: modeled data (legacy)
+    """
+    resolved = (mode or os.environ.get("MILI_BENCH_MODE", "auto")).lower()
+    if resolved == "lab":
+        from mili_bnn_tmr.benchmark.lab import enrich_with_accuracy, measure_lab_benchmark
+
+        df = measure_lab_benchmark(spec)
+        if measured_accuracy_pct is not None:
+            return enrich_with_accuracy(df, measured_accuracy_pct)
+        return df
+    if resolved == "auto":
+        try:
+            from mili_bnn_tmr.benchmark.lab import measure_lab_benchmark
+
+            df_syn = _generate_synthetic(spec)
+            df_lab = measure_lab_benchmark(spec)
+            for col in ("latency_ms", "power_watts", "energy_per_inference_mj"):
+                if col in df_lab.columns:
+                    df_syn[col] = df_lab[col].values[: len(df_syn)]
+            df_syn["source"] = "lab"
+            return df_syn
+        except Exception:
+            pass
+    return _generate_synthetic(spec)
+
+
+def _generate_synthetic(spec: ChipSpec | None = None) -> pd.DataFrame:
+    """Legacy modeled benchmark (fallback when lab backend unavailable)."""
     spec = spec or load_chip_spec()
     bench = spec.benchmark
     req = spec.requirements

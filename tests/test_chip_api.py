@@ -48,7 +48,7 @@ def test_load_missing_model_raises():
 
 def test_load_unsupported_format_raises(tmp_path):
     chip = MiliChip()
-    bad = tmp_path / "model.pt"
+    bad = tmp_path / "model.xyz"
     bad.write_text("stub")
     with pytest.raises(ValueError, match="Unsupported"):
         chip.load_model(bad)

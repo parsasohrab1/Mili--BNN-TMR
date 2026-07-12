@@ -31,6 +31,12 @@ class ChipSpec:
     pe_count: int
     max_power_w: float
     typical_power_w: float
+    packaging: str
+    interfaces: tuple[str, ...]
+    operating_temp_c: tuple[int, int]
+    supported_os: tuple[str, ...]
+    model_formats: tuple[str, ...]
+    silicon_rev: str
     power_states: dict[str, PowerState]
     requirements: dict[str, float]
     benchmark: dict[str, Any]
@@ -50,6 +56,8 @@ def load_chip_spec(path: Path | None = None) -> ChipSpec:
         for name, state in raw["power_states"].items()
     }
 
+    tapeout = raw.get("tapeout", {})
+
     return ChipSpec(
         name=chip["name"],
         technology_nm=chip["technology_nm"],
@@ -60,10 +68,16 @@ def load_chip_spec(path: Path | None = None) -> ChipSpec:
         pe_count=chip["pe_count"],
         max_power_w=chip["max_power_w"],
         typical_power_w=chip["typical_power_w"],
+        packaging=str(chip.get("packaging", tapeout.get("packaging", "BGA-484"))),
+        interfaces=tuple(raw.get("interfaces", [])),
+        operating_temp_c=tuple(chip.get("operating_temp_c", [-40, 85])),
+        supported_os=tuple(raw.get("supported_os", [])),
+        model_formats=tuple(raw.get("model_formats", [])),
+        silicon_rev=str(tapeout.get("silicon_rev", "A0")),
         power_states=power_states,
         requirements=raw["requirements"],
         benchmark=raw["benchmark"],
         radiation=raw.get("radiation", {}),
-        tapeout=raw.get("tapeout", {}),
+        tapeout=tapeout,
         release=raw.get("release", {}),
     )

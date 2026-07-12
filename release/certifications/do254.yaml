@@ -3,6 +3,10 @@ title: Design Assurance Guidance for Airborne Electronic Hardware
 status: in_progress
 level: DAL-B
 certificate_id: ""
+evidence_package: release/certifications/do254_evidence/evidence_manifest.json
+completion_target_pct: 90
 notes: >
-  RTL verification complete (Verilator). TMR/SEU evidence from Phase 5.
-  Formal sign-off pending customer DAL assignment.
+  DAL-B evidence package auto-generated via mili-release --do254.
+  RTL verification complete (Verilator signoff gate).
+  TMR/SEU software validation complete (Phase 5).
+  Independent review and certification authority submission pending.

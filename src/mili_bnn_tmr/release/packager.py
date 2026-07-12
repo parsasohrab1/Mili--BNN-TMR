@@ -54,6 +54,7 @@ class SDKPackager:
         ("docs", "docs", "Datasheet, Integration Guide, API Reference"),
         ("config", "config/chip_spec.yaml", "Chip specification"),
         ("examples", "examples", "Reference examples"),
+        ("reference_model", "data/mnist.mili", "Bundled MNIST .mili reference model"),
     ]
 
     def __init__(self, version: str | None = None) -> None:

@@ -11,6 +11,7 @@ read_file -format sverilog [list \
   ${RTL_DIR}/tmr_voter.sv \
   ${RTL_DIR}/tmr_triplex.sv \
   ${RTL_DIR}/ecc_codec.sv \
+  ${RTL_DIR}/sram_macro.sv \
   ${RTL_DIR}/sram_bank.sv \
   ${RTL_DIR}/sram_ctrl.sv \
   ${RTL_DIR}/dpm_ctrl.sv \

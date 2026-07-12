@@ -1,8 +1,26 @@
 standard: ECSS-Q-ST-60-15C
 title: Radiation Hardness Assurance — EEE Components
-status: certified
+status: certified_software
 level: Class-2
 certificate_id: ECSS-MILI-2026-001
+software_validation:
+  seu_correction_pct: 99.6
+  profiles_validated:
+    - cobalt_60
+    - proton_beam
+    - leo_orbit
+  method: software_fault_injection + SEU emulator
+physical_test_status: pending
+physical_beam_plans:
+  - profile: cobalt_60
+    facility: Co-60 gamma chamber
+    status: pending
+    requires: engineering_samples_on_silicon
+  - profile: proton_beam
+    facility: 62 MeV proton cyclotron
+    status: pending
+    requires: engineering_samples_on_silicon
 notes: >
-  SEU correction >= 99% validated. Cobalt-60 and proton beam profiles tested.
-  Operating envelope -40C to +85C.
+  Software SEU/TMR validation >= 99% complete (mili-radiation --acceptance).
+  Physical Co-60 and proton beam campaigns scheduled on ES lot (BGA-484).
+  Run: mili-radiation --hardware-campaign after silicon bring-up.

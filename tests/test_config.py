@@ -21,3 +21,13 @@ def test_requirements_loaded():
     spec = load_chip_spec()
     assert spec.requirements["max_latency_ms"] == 10
     assert spec.requirements["min_accuracy_pct"] == 95
+
+
+def test_packaging_interfaces_operating_temp():
+    spec = load_chip_spec()
+    assert spec.packaging == "BGA-484"
+    assert "PCIe Gen4" in spec.interfaces
+    assert spec.operating_temp_c == (-40, 85)
+    assert spec.silicon_rev == "A0"
+    assert "Linux RT" in spec.supported_os
+    assert "ONNX" in spec.model_formats

@@ -14,6 +14,7 @@ from mili_bnn_tmr.power.dpm import PowerMode
 
 class BackendType(Enum):
     SIMULATOR = "simulator"
+    FPGA = "fpga"
     STM32 = "stm32"
     PCIE = "pcie"
 
@@ -62,3 +63,8 @@ class HardwareBackend(ABC):
     @property
     @abstractmethod
     def backend_type(self) -> BackendType: ...
+
+    def get_tmr_stats(self) -> dict[str, int | bool]:
+        from mili_bnn_tmr.integration.hw_regs import read_tmr_stats
+
+        return read_tmr_stats(self)

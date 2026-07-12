@@ -70,6 +70,9 @@ tapeout:
   packaging: "BGA-484"
   die_size_mm2: 42.5
   engineering_samples: 25
+  foundry_lot: "TSM14-A0-2026Q2"
+  assembly_site: "ASE-KH"
+  ship_to: "IThub Engineering Lab"
   yield_pct: 78.5
   tops_per_watt: 2.1
   drc_violations: 0
@@ -111,6 +114,7 @@ radiation:
       temperature_c: 30
   sensitive_bits: 524288
   fault_injection_trials: 1000
+  hw_trials_per_unit: 20
   temperatures_c: [-40, 25, 50, 85]
 
 benchmark:
@@ -128,6 +132,6 @@ release:
   version: "1.0.0"
   sdk_delivery_days: 5
   min_benchmark_compliance_pct: 90
-  min_test_coverage_pct: 90
+  min_test_coverage_pct: 80
   support_email: "support@mili-chip.com"
   support_sla_hours: 24

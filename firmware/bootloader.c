@@ -151,25 +151,81 @@ void mili_bootloader_run(void)
         if (boot_read_bytes(&cmd, 1) != 0)
             continue;
         boot_process_cmd(cmd);
+#ifdef MILI_BOOT_HOST_TEST
+        g_boot.running = 0;
+        break;
+#endif
     }
 
     boot_jump_to_app(g_boot.app_entry);
 }
 
-/* Simulator stubs for host testing */
+/* Simulator / host test stubs */
 #ifdef MILI_BOOT_HOST
 static uint8_t g_host_sram[MILI_SRAM_SIZE];
+static uint8_t g_spi_q[512];
+static uint32_t g_spi_q_len, g_spi_q_pos;
 
 int boot_uart_rx_byte(uint8_t *byte)  { (void)byte; return -1; }
 int boot_uart_tx(const uint8_t *d, uint32_t n) { (void)d; (void)n; return (int)n; }
-int boot_spi_rx(uint8_t *d, uint32_t n)  { (void)d; (void)n; return (int)n; }
+
+int boot_spi_rx(uint8_t *d, uint32_t n)
+{
+    uint32_t i;
+    for (i = 0; i < n; i++) {
+        if (g_spi_q_pos >= g_spi_q_len)
+            return 0;
+        d[i] = g_spi_q[g_spi_q_pos++];
+    }
+    return (int)i;
+}
+
 int boot_spi_tx(const uint8_t *d, uint32_t n) { (void)d; (void)n; return (int)n; }
 void boot_jump_to_app(uint32_t entry) { (void)entry; g_boot.running = 0; }
+
+static void host_spi_feed(const uint8_t *data, uint32_t len)
+{
+    memcpy(g_spi_q, data, len < sizeof(g_spi_q) ? len : sizeof(g_spi_q));
+    g_spi_q_len = len;
+    g_spi_q_pos = 0;
+}
+
+#ifdef MILI_BOOT_HOST_TEST
+static int host_test_write(void)
+{
+    uint32_t addr = MILI_SRAM_BASE + MILI_SRAM_INPUT_OFF;
+    uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
+    uint8_t frame[16];
+    frame[0] = BOOT_MAGIC_0;
+    frame[1] = BOOT_MAGIC_1;
+    frame[2] = BOOT_MAGIC_2;
+    frame[3] = CMD_WRITE;
+    frame[4] = (uint8_t)addr;
+    frame[5] = (uint8_t)(addr >> 8);
+    frame[6] = (uint8_t)(addr >> 16);
+    frame[7] = (uint8_t)(addr >> 24);
+    frame[8] = 4;
+    frame[9] = frame[10] = frame[11] = 0;
+    memcpy(frame + 12, payload, 4);
+    host_spi_feed(frame, 16);
+    g_boot.running = 1;
+    mili_bootloader_run();
+    return memcmp(g_host_sram + MILI_SRAM_INPUT_OFF, payload, 4);
+}
 
 int main(void)
 {
     mili_bootloader_init(BOOT_IFACE_SPI, g_host_sram, sizeof(g_host_sram));
-    g_boot.running = 0; /* exit immediately in host test */
+    if (host_test_write() != 0)
+        return 1;
     return 0;
 }
+#else
+int main(void)
+{
+    mili_bootloader_init(BOOT_IFACE_SPI, g_host_sram, sizeof(g_host_sram));
+    g_boot.running = 0;
+    return 0;
+}
+#endif
 #endif

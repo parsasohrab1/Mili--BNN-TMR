@@ -39,13 +39,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.samples or args.acceptance:
         lot = EngineeringSampleLot.from_spec()
         lot_path = Path("data/engineering_samples.json")
+        csv_path = Path("data/engineering_samples.csv")
         lot.export(lot_path)
+        lot.export_csv(csv_path)
         print("\n=== Engineering Samples ===")
         print(f"  Lot:     {lot.lot_id}")
+        print(f"  Fab:     {lot.foundry_lot}")
         print(f"  Rev:     {lot.silicon_rev}")
         print(f"  Qty:     {lot.quantity}")
         print(f"  Yield:   {lot.yield_pct}%")
         print(f"  Export:  {lot_path}")
+        print(f"  CSV:     {csv_path}")
 
     if args.ate or args.acceptance:
         lot = EngineeringSampleLot.from_spec()

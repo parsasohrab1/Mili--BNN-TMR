@@ -246,13 +246,16 @@ int mili_chip_infer(mili_chip_t *chip,
     mili_hal_reg_read(chip->hal_ctx, chip->ops, MILI_REG_INFER_STAT, &infer_stat);
     mili_hal_reg_read(chip->hal_ctx, chip->ops, MILI_REG_DPM_STAT, &dpm_stat);
 
+    uint32_t tmr_stat = 0;
+    mili_hal_reg_read(chip->hal_ctx, chip->ops, MILI_REG_TMR_STAT, &tmr_stat);
+
     uint32_t cycles = (infer_stat >> MILI_INFER_CYCLE_SHIFT) & MILI_INFER_CYCLE_MASK;
     uint32_t freq = (dpm_stat >> MILI_DPM_CUR_FREQ_SHIFT) & MILI_DPM_CUR_FREQ_MASK;
     if (freq == 0)
         freq = 400;
     result->latency_ms = (float)cycles / (float)freq / 1000.0f;
     result->power_mode = (mili_power_mode_t)(dpm_stat & MILI_DPM_MODE_MASK);
-    result->tmr_corrected = false;
+    result->tmr_corrected = (tmr_stat & MILI_TMR_DISAGREE) != 0;
 
     return MILI_OK;
 }
@@ -292,6 +295,22 @@ int mili_chip_set_power_mode(mili_chip_t *chip, mili_power_mode_t mode)
 
     chip->power_mode = mode;
     return MILI_OK;
+}
+
+int mili_chip_reg_read(mili_chip_t *chip, uint32_t offset, uint32_t *value)
+{
+    if (!chip || !value)
+        return MILI_ERR;
+    return (mili_hal_reg_read(chip->hal_ctx, chip->ops, offset, value) == MILI_HAL_OK)
+               ? MILI_OK : MILI_ERR_IO;
+}
+
+int mili_chip_reg_write(mili_chip_t *chip, uint32_t offset, uint32_t value)
+{
+    if (!chip)
+        return MILI_ERR;
+    return (mili_hal_reg_write(chip->hal_ctx, chip->ops, offset, value) == MILI_HAL_OK)
+               ? MILI_OK : MILI_ERR_IO;
 }
 
 int mili_chip_dma_write(mili_chip_t *chip, uint32_t sram_addr,

@@ -1,0 +1,8 @@
+# Zephyr module for Mili BNN-TMR driver
+
+name: mili-bnn-tmr
+build:
+  kconfig: Kconfig
+  cmake: .
+  settings:
+    dts_root: .

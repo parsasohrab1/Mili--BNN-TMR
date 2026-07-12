@@ -1,0 +1,15 @@
+/ {
+	chosen {
+		zephyr,console = &uart0;
+	};
+};
+
+&spi0 {
+	status = "okay";
+	mili_accel: mili-bnn-tmr@0 {
+		compatible = "mili,bnn-tmr";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+		irq-gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+	};
+};

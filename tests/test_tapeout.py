@@ -82,9 +82,11 @@ def test_ate_program():
 def test_bga484_pinout_exists():
     path = Path(__file__).resolve().parents[1] / "tapeout" / "packaging" / "bga484_pinout.yaml"
     assert path.exists()
-    text = path.read_text(encoding="utf-8")
-    assert "BGA-484" in text
-    assert "484" in text
+    import yaml
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert data["package"]["name"] == "BGA-484"
+    assert data["package"]["ball_count"] == 484
+    assert len(data.get("balls", {})) == 484
 
 
 def test_timing_report_exists():

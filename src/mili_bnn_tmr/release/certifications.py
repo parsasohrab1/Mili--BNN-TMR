@@ -14,6 +14,7 @@ _CERT_DIR = Path(__file__).resolve().parents[3] / "release" / "certifications"
 
 class CertStatus(Enum):
     CERTIFIED = "certified"
+    CERTIFIED_SOFTWARE = "certified_software"
     IN_PROGRESS = "in_progress"
     PLANNED = "planned"
     NOT_REQUIRED = "not_required"
@@ -80,9 +81,13 @@ class CertificationRegistry:
         return list(self._certs)
 
     def summary(self) -> dict[str, Any]:
+        certified = sum(
+            1 for c in self._certs
+            if c.status in (CertStatus.CERTIFIED, CertStatus.CERTIFIED_SOFTWARE)
+        )
         return {
             "total": len(self._certs),
-            "certified": sum(1 for c in self._certs if c.status == CertStatus.CERTIFIED),
+            "certified": certified,
             "in_progress": sum(1 for c in self._certs if c.status == CertStatus.IN_PROGRESS),
             "items": [
                 {

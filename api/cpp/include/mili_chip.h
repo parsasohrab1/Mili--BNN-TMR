@@ -87,6 +87,10 @@ int mili_chip_dma_read(mili_chip_t *chip, uint32_t sram_addr,
 int mili_chip_get_power_state(mili_chip_t *chip, mili_power_state_t *state);
 int mili_chip_set_power_mode(mili_chip_t *chip, mili_power_mode_t mode);
 
+/* CSR access (test / debug) */
+int mili_chip_reg_read(mili_chip_t *chip, uint32_t offset, uint32_t *value);
+int mili_chip_reg_write(mili_chip_t *chip, uint32_t offset, uint32_t value);
+
 #ifdef __cplusplus
 }
 #endif

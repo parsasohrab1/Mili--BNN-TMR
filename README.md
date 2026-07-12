@@ -1,278 +1,134 @@
+# Mili BNN-TMR — Edge AI Accelerator (BNN + TMR)
 
-تراشه شتاب‌دهنده BNN با معماری سیستولیک + TMR
-Edge AI Accelerator Chip with Systolic Array + TMR
-1. مقدمه (Introduction)
-1.1 هدف (Purpose)
-این سند مشخصات کامل سیستم را برای تراشه شتاب‌دهنده هوش مصنوعی لبه‌ای با معماری ماتریس سیستولیک و مقاوم‌سازی سه‌گانه (TMR) در برابر خطاهای نرم تشریح می‌کند. هدف اصلی، طراحی تراشه‌ای کم‌مصرف (توان کمتر از ۵۰ وات) با کارایی بالا برای اجرای شبکه‌های عصبی باینری (BNN) در سامانه‌های هوایی خودگردان است.
+ASIC 14nm systolic BNN accelerator with triple-modular redundancy for aerospace edge AI.
+SDK v1.0.0 — seven-phase delivery from RTL through customer release.
 
-1.2 محدوده (Scope)
-طراحی تراشه ASIC ۱۴ نانومتری
+## Quick Start
 
-پشتیبانی از شبکه‌های عصبی باینری (۱-بیت) با عمق تا ۲۰ لایه
+```bash
+pip install -e ".[dev,ml]"
 
-مقاوم‌سازی در برابر خطاهای نرم (SEU) با روش TMR
+# Reference MNIST model (bundled or auto-compile)
+python scripts/ensure_mnist_model.py
 
-رابط‌های ارتباطی: PCIe Gen4, SPI, I2C, UART
+# Classify with the Python API
+python examples/quickstart_classify.py
+```
 
-مصرف توان هدف: < ۵۰ وات
+## Seven-Phase Roadmap
 
-دمای عملیاتی: -۴۰°C تا +۸۵°C
+| Phase | Scope | Key deliverable | Validation |
+|-------|--------|-----------------|------------|
+| **1** | RTL design | `rtl/` — systolic PE, TMR, PCIe/SPI | `bash sim/verilator/signoff_gate.sh` |
+| **2** | Compiler toolchain | `mili-compile` — ONNX / TFLite / PyTorch → `.mili` | `pytest tests/test_compiler.py` |
+| **3** | Driver stack | Linux / Zephyr / FreeRTOS (`drivers/`) | `make -C drivers test` |
+| **4** | System integration | E2E pipeline, STM32 + SPI/PCIe backends | `mili-e2e --acceptance` |
+| **5** | Radiation / SEU | FR-2 TMR validation, fault inject | `mili-radiation --acceptance` |
+| **6** | Tape-out (14nm) | GDS, ATE, engineering samples | `mili-tapeout --acceptance` |
+| **7** | Customer release | SDK tarball, QC, certifications | `mili-release --acceptance` |
 
-1.3 اصطلاحات و اختصارات (Definitions & Acronyms)
-اختصار	توضیح
-BNN	Binary Neural Network - شبکه عصبی با وزن‌های ۱-بیتی
-TMR	Triple Modular Redundancy - افزونگی مدولار سه‌گانه
-SEU	Single Event Upset - خطای نرم ناشی از تشعشع
-TOPS	Tera Operations Per Second - ترا عملیات در ثانیه
-ASIC	Application-Specific Integrated Circuit
-2. الزامات کلی (Overall Description)
-2.1 پرسپکتیو محصول (Product Perspective)
-این تراشه به عنوان شتاب‌دهنده تخصصی در کنار پردازنده اصلی (STM32H7) قرار می‌گیرد و وظیفه اجرای الگوریتم‌های سنگین بینایی ماشین و یادگیری عمیق را بر عهده دارد.
+## CLI Tools
 
-text
-┌─────────────────────────────────────────────┐
-│           پردازنده اصلی (STM32H7)           │
-│  کنترل پرواز، فیوژن حسگر، ارتباطات          │
-└──────────────┬──────────────────────────────┘
-               │ PCIe/SPI
-┌──────────────▼──────────────────────────────┐
-│     تراشه شتاب‌دهنده BNN (ASIC)            │
-│  • معماری سیستولیک                         │
-│  • TMR برای مقاوم‌سازی                     │
-│  • توان < ۵۰ وات                           │
-└─────────────────────────────────────────────┘
-2.2 ویژگی‌های اصلی (Product Functions)
-اجرای شبکه BNN: پشتیبانی از مدل‌های پیش‌آموزش‌دیده با دقت > ۹۵٪
+| Command | Purpose |
+|---------|---------|
+| `mili-compile` | Compile ONNX / TFLite / PyTorch / reference MNIST → `.mili` |
+| `mili-benchmark` | Generate benchmark CSV and compliance summary |
+| `mili-e2e` | Phase 4 end-to-end acceptance (camera → classify) |
+| `mili-radiation` | Phase 5 SEU validation (`--acceptance`, `--hardware-campaign`, `--physical-beam`) |
+| `mili-tapeout` | Phase 6 tape-out signoff and engineering lot manifest |
+| `mili-release` | Phase 7 SDK build, QC, DO-254 evidence (`--build-sdk`, `--do254`) |
+| `mili-support` | Customer support — `support@mili-chip.com` (24h SLA) |
 
-مقاوم‌سازی TMR: تصحیح خطا در سه ماژول موازی با رأی‌گیری اکثریت
+### Common commands
 
-پردازش بلادرنگ: تأخیر کمتر از ۱۰ میلی‌ثانیه برای هر تصویر
+```bash
+# Compile models
+mili-compile --reference mnist -o data/mnist.mili
+mili-compile model.onnx -o model.mili
+mili-compile --tflite model.tflite -o model.mili
+mili-compile --pytorch model.pt -o model.mili
 
-مدیریت توان: قابلیت تنظیم فرکانس و ولتاژ دینامیک
+# Benchmarks
+mili-benchmark benchmark --summary -o data/benchmark.csv
 
-2.3 کاربران (User Characteristics)
-مهندسان سخت‌افزار: برای یکپارچه‌سازی و تست
+# Phase acceptance gates (CI runs these on every push)
+mili-e2e --acceptance
+mili-radiation --acceptance --profile cobalt_60
+mili-tapeout --acceptance
+mili-release --acceptance
 
-مهندسان نرم‌افزار: برای توسعه درایور و API
+# Build customer SDK
+mili-release --build-sdk -o dist/
 
-توسعه‌دهندگان الگوریتم: برای پیاده‌سازی مدل‌های عصبی
+# Support
+mili-support --info
+mili-support --ticket --email you@company.com --subject "Integration help"
+```
 
-3. الزامات سیستم (System Requirements)
-3.1 الزامات سخت‌افزاری (Hardware Requirements)
-پارامتر	مقدار	توضیح
-تکنولوژی ساخت	۱۴ نانومتری FinFET	
-ولتاژ کاری	۰.۸۵V - ۱.۲V	قابل تنظیم
-فرکانس پایه	۴۰۰ MHz	قابل اسکیل تا ۸۰۰ MHz
-حافظه داخلی	۳۲ MB SRAM	با ECC
-پهنای باند حافظه	۲۵۶ بیت	
-تعداد هسته‌ها	۶۴ PE (Processing Element)	آرایه ۸×۸
-توان مصرفی	< ۵۰ وات	Typical: ۳۰ وات
-بسته‌بندی	BGA-484	
-3.2 الزامات نرم‌افزاری (Software Requirements)
-ویژگی	الزام
-سیستم‌عامل پشتیبانی‌شده	Linux RT, Zephyr, FreeRTOS
-درایور	PCIe/SPI با پشتیبانی DMA
-API سطح بالا	Python/C++ برای بارگذاری مدل
-پشتیبانی از فرمت‌ها	ONNX, TensorFlow Lite, PyTorch
-ابزارهای توسعه	کامپایلر/بهینه‌ساز مدل
-4. مشخصات عملکردی (Functional Requirements)
-4.1 FR-1: استنتاج شبکه عصبی باینری
-توضیح: تراشه باید بتواند یک شبکه عصبی باینری با وزن‌های ۱-بیتی را در زمان واقعی اجرا کند.
+## Repository Layout
 
-ورودی:
+```
+rtl/              SystemVerilog (systolic, TMR, PCIe Gen4, SRAM macro)
+drivers/          C drivers (Linux PCIe, Zephyr, STM32 SPI)
+api/              Python + C/C++ host APIs
+src/mili_bnn_tmr/ Compiler, benchmark, radiation, tapeout, release
+config/           chip_spec.yaml — silicon parameters
+data/             mnist.mili reference model, benchmark outputs
+docs/             Datasheet, integration guide, API reference, phase guides
+release/          SDK manifest, certifications, DO-254 evidence
+fpga/             Artix-7 Vivado bitstream flow
+tapeout/          GDS packaging, BGA-484 pinout
+```
 
-تصویر یا ویژگی‌های استخراج‌شده (اندازه متغیر: ۳۲×۳۲ تا ۲۲۴×۲۲۴)
+## Chip Specification
 
-وزن‌های شبکه (ذخیره شده در حافظه داخلی)
+Loaded from `config/chip_spec.yaml`:
 
-خروجی:
+- **Technology:** TSMC 14nm FinFET
+- **Packaging:** BGA-484
+- **Interfaces:** PCIe Gen4, SPI, I2C, UART
+- **Operating temp:** −40°C to +85°C
+- **Silicon rev:** A0 (see `docs/HARDWARE_REVISION.md` for A0 → A1 migration)
+- **Power:** < 50 W typical, DPM sleep / idle / normal / turbo
 
-نتیجه طبقه‌بندی یا شناسایی
+```python
+from api.python.chip_api import MiliChip
 
-بردار ویژگی‌های استخراج‌شده
+chip = MiliChip()
+print(chip.get_silicon_info())   # silicon_rev, lot_id, next_rev
+print(chip.get_status())         # packaging, interfaces, operating_temp_c
+```
 
-معیار پذیرش:
+## SDK Release (GitHub)
 
-دقت ≥ ۹۵% نسبت به نسخه float
+Tagged releases (`v*`) publish `dist/mili-bnn-tmr-sdk-*.tar.gz` to **GitHub Releases** via `.github/workflows/release.yml`.
 
-تأخیر < ۱۰ms برای تصویر ۲۲۴×۲۲۴
+```bash
+git tag v1.0.0 && git push origin v1.0.0   # triggers SDK upload
+```
 
-مصرف انرژی < ۲mJ به ازای هر استنتاج
+## Documentation
 
-4.2 FR-2: مقاوم‌سازی در برابر خطا (TMR)
-توضیح: سیستم باید با استفاده از افزونگی سه‌گانه، خطاهای نرم را تصحیح کند.
+| Document | Content |
+|----------|---------|
+| [docs/SRS_PRODUCT1.md](docs/SRS_PRODUCT1.md) | Full system requirements (Persian/English) |
+| [docs/INTEGRATION.md](docs/INTEGRATION.md) | Phase 4 host wiring |
+| [docs/RADIATION_VALIDATION.md](docs/RADIATION_VALIDATION.md) | Phase 5 SEU testing |
+| [docs/TAPEOUT.md](docs/TAPEOUT.md) | Phase 6 tape-out |
+| [docs/RELEASE.md](docs/RELEASE.md) | Phase 7 customer onboarding |
+| [docs/HARDWARE_REVISION.md](docs/HARDWARE_REVISION.md) | Silicon A0 → A1 revision tracking |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Python / C API |
 
-ورودی:
+## Support
 
-سه ماژول محاسباتی موازی
+- **Email:** support@mili-chip.com
+- **SLA:** 24 hours (`mili-support --info`)
+- Integration assistance for BGA-484 bring-up and SDK deployment
 
-داده‌های ورودی یکسان
+## CI
 
-خروجی:
+`.github/workflows/ci.yml` runs unit tests, C driver build, Verilator signoff, Zephyr sample build, and all phase acceptance gates on every push to `main`.
 
-خروجی اکثریت رأی‌گیری‌شده
+## License
 
-معیار پذیرش:
-
-تشخیص و تصحیح ≥ ۹۹% از خطاهای SEU
-
-تأخیر اضافی TMR < ۵%
-
-افزایش توان < ۱۵%
-
-4.3 FR-3: مدیریت توان پویا (Dynamic Power Management)
-توضیح: تراشه باید بتواند فرکانس و ولتاژ را بر اساس بار کاری تنظیم کند.
-
-حالت‌های توان:
-
-حالت	فرکانس	توان مصرفی	زمان فعال‌سازی
-Sleep	۰ MHz	< ۱۰mW	< ۱μs
-Idle	۱۰۰ MHz	۵W	< ۵۰μs
-Normal	۴۰۰ MHz	۳۰W	پایه
-Turbo	۸۰۰ MHz	۴۸W	< ۱۰۰μs
-معیار پذیرش:
-
-زمان سوئیچ بین حالت‌ها < ۱۰۰μs
-
-کاهش توان حداقل ۴۰% در حالت Idle
-
-5. کد تولید داده - محصول اول
-python
-# =====================================================
-# SRS - PRODUCT 1: EDGE AI CHIP WITH BNN + TMR
-# Data Generation Script
-# =====================================================
-
-import numpy as np
-import pandas as pd
-from datetime import datetime
-
-np.random.seed(42)
-
-def generate_chip_benchmark_data():
-    """
-    تولید داده‌های معیار عملکرد تراشه بر اساس SRS
-    شامل ۴ سناریو: عادی، تنش حرارتی، تشعشع، لرزش بالا
-    """
-    
-    chip_data = []
-    scenarios = ['nominal', 'thermal_stress', 'radiation_SEU', 'high_vibration']
-    batch_sizes = [1, 4, 16, 64]
-    frequencies = [100, 200, 400, 800]  # MHz
-    temperatures = [25, 50, 75, 85]  # درجه سانتی‌گراد
-    
-    for scenario in scenarios:
-        for batch in batch_sizes:
-            for freq in frequencies:
-                # ========== محاسبه توان مصرفی ==========
-                # فرمول: P = P0 + α*f + β*T + γ*error_rate
-                base_power = 5.0 + (freq / 100) * 2.5  # وات
-                
-                if scenario == 'nominal':
-                    power = base_power + np.random.normal(0, 0.5)
-                elif scenario == 'thermal_stress':
-                    temp_factor = 1 + (temperatures[batch_sizes.index(batch) % 4] - 25) * 0.008
-                    power = base_power * temp_factor + np.random.normal(0, 0.3)
-                elif scenario == 'radiation_SEU':
-                    # افزایش توان به دلیل TMR فعال
-                    power = base_power * 1.15 + np.random.normal(0, 0.2)
-                else:  # high_vibration
-                    power = base_power * 1.1 + np.random.normal(0, 0.4)
-                
-                power = max(0.1, round(power, 2))
-                
-                # ========== محاسبه تأخیر ==========
-                # Latency = L0 + (batch/freq) * K
-                base_latency = (batch ** 0.3) * (1000 / freq) * 2
-                if scenario == 'thermal_stress':
-                    latency = base_latency * 1.25
-                elif scenario == 'radiation_SEU':
-                    latency = base_latency * 1.05
-                elif scenario == 'high_vibration':
-                    latency = base_latency * 1.15
-                else:
-                    latency = base_latency
-                
-                latency = round(latency + np.random.normal(0, 0.1), 2)
-                
-                # ========== محاسبه TOPS/W ==========
-                # TOPS/W = (TOPS) / Power
-                tops = 64.0 * (freq / 400) * (1 - 0.01 * (batch - 1))
-                if scenario == 'thermal_stress':
-                    tops *= 0.75
-                elif scenario == 'radiation_SEU':
-                    tops *= 0.85
-                elif scenario == 'high_vibration':
-                    tops *= 0.90
-                
-                tops_per_watt = round(tops / power if power > 0 else 0, 2)
-                
-                # ========== محاسبه دقت ==========
-                # Accuracy = 97% - degradation
-                base_accuracy = 97.5 - (batch ** 0.2) * 0.3
-                if scenario == 'radiation_SEU':
-                    accuracy = base_accuracy * 0.88
-                elif scenario == 'thermal_stress':
-                    accuracy = base_accuracy * 0.95
-                else:
-                    accuracy = base_accuracy
-                
-                accuracy = round(accuracy + np.random.normal(0, 0.2), 2)
-                accuracy = min(99.5, max(80.0, accuracy))
-                
-                # ========== اثرگذاری TMR ==========
-                tmr_effectiveness = 99.5 if scenario != 'radiation_SEU' else 92.0 + np.random.normal(0, 1)
-                tmr_effectiveness = round(min(100, max(85, tmr_effectiveness)), 2)
-                
-                # ========== انرژی مصرفی هر استنتاج ==========
-                energy_per_inference = round((power * latency) / 1000, 4)
-                
-                chip_data.append({
-                    'scenario': scenario,
-                    'batch_size': batch,
-                    'frequency_mhz': freq,
-                    'temperature_c': temperatures[batch_sizes.index(batch) % 4],
-                    'power_watts': power,
-                    'latency_ms': latency,
-                    'tops_per_watt': tops_per_watt,
-                    'accuracy_pct': accuracy,
-                    'tmr_effectiveness_pct': tmr_effectiveness,
-                    'energy_per_inference_mj': energy_per_inference,
-                    'meets_spec': 'YES' if (
-                        power < 50 and 
-                        latency < 10 and 
-                        accuracy > 95 and 
-                        tmr_effectiveness > 90
-                    ) else 'NO'
-                })
-    
-    return pd.DataFrame(chip_data)
-
-# ========== تولید و ذخیره داده ==========
-print("🚀 Generating Product 1 (Edge AI Chip) benchmark data...")
-df_chip = generate_chip_benchmark_data()
-df_chip.to_csv('edge_ai_chip_benchmark.csv', index=False)
-
-# ========== گزارش آماری ==========
-print("\n" + "="*60)
-print("PRODUCT 1 - EDGE AI CHIP BENCHMARK SUMMARY")
-print("="*60)
-print(f"Total records: {len(df_chip)}")
-print(f"Scenarios: {df_chip['scenario'].unique().tolist()}")
-print(f"Batch sizes: {sorted(df_chip['batch_size'].unique().tolist())}")
-print(f"Frequency range: {df_chip['frequency_mhz'].min()} - {df_chip['frequency_mhz'].max()} MHz")
-
-print("\n--- Performance by Scenario ---")
-summary = df_chip.groupby('scenario').agg({
-    'power_watts': 'mean',
-    'latency_ms': 'mean',
-    'tops_per_watt': 'mean',
-    'accuracy_pct': 'mean',
-    'tmr_effectiveness_pct': 'mean'
-}).round(2)
-print(summary)
-
-print(f"\n✅ Compliance rate: {df_chip['meets_spec'].value_counts(normalize=True)['YES']*100:.1f}%")
-
-print("\n📁 File saved: edge_ai_chip_benchmark.csv")
-print("\n✅ Product 1 data generation complete!")
+Proprietary — Mili Semiconductor / IThub Engineering Lab.

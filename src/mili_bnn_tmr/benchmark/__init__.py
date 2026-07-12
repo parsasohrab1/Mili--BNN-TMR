@@ -5,9 +5,11 @@ from mili_bnn_tmr.benchmark.generator import (
     generate_chip_benchmark_data,
     summarize_benchmark,
 )
+from mili_bnn_tmr.benchmark.lab import measure_lab_benchmark
 
 __all__ = [
     "benchmark_compliance_rate",
     "generate_chip_benchmark_data",
     "summarize_benchmark",
+    "measure_lab_benchmark",
 ]

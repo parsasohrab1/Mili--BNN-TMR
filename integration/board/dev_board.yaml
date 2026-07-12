@@ -7,6 +7,19 @@ board:
   mcu_freq_mhz: 480
   accelerator: "FPGA (Xilinx Artix-7) / ASIC ES"
 
+fpga:
+  vendor: Xilinx
+  family: Artix-7
+  part: XC7A200T-FBG484-2
+  tool: Vivado
+  bitstream: fpga/build/mili_devkit_artix7.bit
+  synth_flow: fpga/Makefile
+  flow: fpga/vivado_synth.tcl
+  host_interface: SPI1
+  notes: >
+    Run `make -C fpga synth` with Vivado in PATH.
+    Bitstream programs the on-board Artix-7 chip emulator.
+
 connections:
   host_to_chip:
     primary: SPI1

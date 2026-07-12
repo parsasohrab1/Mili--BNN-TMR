@@ -1,0 +1,21 @@
+# DO-254 DAL-B — Design review checklist
+
+dal_level: B
+review_date: pending
+reviewer: ""
+
+checklist:
+  - item: Hardware requirements baselined (chip_spec.yaml)
+    status: complete
+  - item: RTL reviewed against requirements
+    status: complete
+  - item: Verification plan executed (pytest + Verilator)
+    status: complete
+  - item: TMR/SEU safety evidence documented
+    status: complete
+  - item: Configuration management (SDK manifest)
+    status: complete
+  - item: Independent design review sign-off
+    status: pending
+  - item: Certification authority submission package
+    status: pending

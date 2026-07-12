@@ -49,11 +49,18 @@ static int sim_write_reg(void *ctx, uint32_t offset, uint32_t value)
     /* INFER_START → simulate completion */
     if (offset == MILI_REG_INFER_CTRL && (value & MILI_INFER_START)) {
         uint32_t batch = sim->csr[MILI_REG_BATCH_SIZE / 4];
+        uint32_t tmr_ctrl = sim->csr[MILI_REG_TMR_CTRL / 4];
         if (batch == 0)
             batch = 1;
         uint32_t cycles = 14u * 10u * batch;
         sim->csr[MILI_REG_INFER_STAT / 4] = MILI_INFER_DONE | (cycles << MILI_INFER_CYCLE_SHIFT);
         sim->irq_pending |= MILI_IRQ_INFER_DONE;
+        if (tmr_ctrl & MILI_TMR_FAULT_INJECT) {
+            uint32_t cnt = (sim->csr[MILI_REG_TMR_STAT / 4] >> MILI_TMR_ERR_CNT_SHIFT) & MILI_TMR_ERR_CNT_MASK;
+            cnt++;
+            sim->csr[MILI_REG_TMR_STAT / 4] = MILI_TMR_DISAGREE | (cnt << MILI_TMR_ERR_CNT_SHIFT);
+            sim->irq_pending |= MILI_IRQ_TMR_ERR;
+        }
         if (sim->irq_cb)
             sim->irq_cb(MILI_IRQ_INFER_DONE, sim->irq_user);
     }
@@ -125,6 +132,8 @@ int mili_sim_hal_init(void **ctx)
         return MILI_HAL_ERR;
     g_sim.csr[MILI_REG_STATUS / 4] = MILI_STATUS_READY | MILI_STATUS_SRAM_RDY;
     g_sim.csr[MILI_REG_DPM_STAT / 4] = MILI_DPM_NORMAL | (400u << MILI_DPM_CUR_FREQ_SHIFT);
+    g_sim.csr[MILI_REG_TMR_CTRL / 4] = MILI_TMR_EN;
+    g_sim.csr[MILI_REG_TMR_CTRL / 4] = MILI_TMR_EN;
     *ctx = &g_sim;
     return MILI_HAL_OK;
 }

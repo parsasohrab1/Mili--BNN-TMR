@@ -14,9 +14,12 @@ VERILATOR_FLAGS = \
 	-I$(RTL_DIR)
 
 # ── Unit tests ────────────────────────────────────────────────
-.PHONY: all pe systolic tmr triplex voter ecc dpm top clean help
+.PHONY: all pe systolic tmr triplex voter ecc dpm top signoff clean help
 
-all: pe systolic tmr triplex top
+all: signoff
+
+signoff: pe systolic tmr triplex top
+	@echo "RTL signoff: all targets passed"
 
 pe: TOP = pe
 pe: TB = tb_pe.cpp

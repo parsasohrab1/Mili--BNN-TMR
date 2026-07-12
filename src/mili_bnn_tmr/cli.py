@@ -35,13 +35,24 @@ def main() -> None:
         action="store_true",
         help="Print summary statistics",
     )
+    bench_parser.add_argument(
+        "--lab",
+        action="store_true",
+        help="Measure benchmark from hardware backend (lab mode)",
+    )
+    bench_parser.add_argument(
+        "--synthetic",
+        action="store_true",
+        help="Use modeled synthetic benchmark data",
+    )
 
     subparsers.add_parser("spec", help="Print chip specification")
 
     args = parser.parse_args()
 
     if args.command == "benchmark":
-        df = generate_chip_benchmark_data()
+        mode = "synthetic" if args.synthetic else ("lab" if args.lab else "auto")
+        df = generate_chip_benchmark_data(mode=mode)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(args.output, index=False)
         print(f"Generated {len(df)} records -> {args.output}")

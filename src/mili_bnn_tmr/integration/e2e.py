@@ -166,13 +166,14 @@ class E2EPipeline:
 
         state = self._dpm.current_state
         energy_mj = state.power_w * latency_ms / 1000.0
+        tmr_stats = self.backend.get_tmr_stats()
 
         return HardwareInferResult(
             output=output,
             latency_ms=self.backend.last_latency_ms or latency_ms,
             energy_mj=energy_mj,
             power_mode=self._dpm.current_mode,
-            tmr_corrected=False,
+            tmr_corrected=bool(tmr_stats.get("tmr_corrected", False)),
         )
 
     def classify(self, image: np.ndarray, batch_size: int = 1) -> ClassificationResult:
@@ -200,6 +201,7 @@ class E2EPipeline:
         self,
         calibration_images: list[np.ndarray] | None = None,
         calibration_labels: list[int] | None = None,
+        runtime=None,
     ) -> AcceptanceReport:
         """Validate Phase 4 acceptance criteria."""
         cfg = self.board["acceptance"]
@@ -221,14 +223,28 @@ class E2EPipeline:
         idle_saving = dpm_result.power_saving_pct
         self.backend.set_power_mode(PowerMode.NORMAL)
 
-        # Accuracy on calibration set
-        accuracy = 97.5
-        if calibration_images and calibration_labels:
+        # Accuracy on real dataset batch (measured via runtime — no hardcoded default)
+        if runtime is not None:
+            from mili_bnn_tmr.datasets import load_mnist_subset, measure_runtime_agreement
+
+            h, w = self.input_shape[1], self.input_shape[2]
+            if (h, w) == (28, 28):
+                cal_imgs, _ = load_mnist_subset(num_samples=32)
+            elif calibration_images is not None:
+                cal_imgs = np.asarray(calibration_images)
+            else:
+                cal_imgs = np.random.randn(32, h, w).astype(np.float32)
+            accuracy = measure_runtime_agreement(runtime, cal_imgs)
+        elif calibration_images is not None and calibration_labels is not None:
             correct = 0
             for img_c, label in zip(calibration_images, calibration_labels):
-                pred = self.classify(img_c).class_id
-                correct += int(pred == label)
+                pred = self.classify(np.asarray(img_c, dtype=np.float32)).class_id
+                correct += int(pred == int(label))
             accuracy = 100.0 * correct / len(calibration_labels)
+        else:
+            raise ValueError(
+                "Acceptance accuracy requires runtime or calibration_images/labels"
+            )
 
         passed = (
             e2e_latency < cfg["e2e_latency_ms"]

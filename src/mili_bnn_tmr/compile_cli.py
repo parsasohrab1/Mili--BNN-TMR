@@ -1,4 +1,4 @@
-"""mili-compile — ONNX / reference model → .mili binary compiler."""
+"""mili-compile — ONNX / TFLite / PyTorch / reference → .mili binary."""
 
 from __future__ import annotations
 
@@ -6,7 +6,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from mili_bnn_tmr.compiler.pipeline import compile_network, compile_onnx
+from mili_bnn_tmr.compiler.pipeline import (
+    compile_model,
+    compile_network,
+    compile_onnx,
+    compile_pytorch,
+    compile_tflite,
+)
 from mili_bnn_tmr.models.reference import (
     build_cifar10_bnn,
     build_custom_vision_bnn,
@@ -17,7 +23,7 @@ from mili_bnn_tmr.models.reference import (
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Compile ONNX or reference BNN models to .mili binary",
+        description="Compile ONNX, TFLite, PyTorch, or reference BNN models to .mili",
     )
     parser.add_argument(
         "-o",
@@ -47,6 +53,9 @@ def main(argv: list[str] | None = None) -> int:
 
     src = parser.add_mutually_exclusive_group(required=True)
     src.add_argument("--onnx", type=Path, help="Input ONNX model path")
+    src.add_argument("--tflite", type=Path, help="Input TFLite .tflite model path")
+    src.add_argument("--pytorch", type=Path, help="Input PyTorch .pt model path")
+    src.add_argument("--input", type=Path, help="Auto-detect format (.onnx/.tflite/.pt)")
     src.add_argument(
         "--reference",
         choices=["mnist", "cifar10", "vision"],
@@ -71,12 +80,26 @@ def main(argv: list[str] | None = None) -> int:
         if not args.onnx.exists():
             print(f"Error: ONNX file not found: {args.onnx}", file=sys.stderr)
             return 1
-        result = compile_onnx(
-            args.onnx,
-            args.output,
-            batch_size=args.batch_size,
-            min_accuracy_pct=args.min_accuracy,
+        result = compile_onnx(args.onnx, args.output, batch_size=args.batch_size, min_accuracy_pct=args.min_accuracy)
+    elif args.tflite:
+        if not args.tflite.exists():
+            print(f"Error: TFLite file not found: {args.tflite}", file=sys.stderr)
+            return 1
+        result = compile_tflite(
+            args.tflite, args.output, batch_size=args.batch_size, min_accuracy_pct=args.min_accuracy
         )
+    elif args.pytorch:
+        if not args.pytorch.exists():
+            print(f"Error: PyTorch file not found: {args.pytorch}", file=sys.stderr)
+            return 1
+        result = compile_pytorch(
+            args.pytorch, args.output, batch_size=args.batch_size, min_accuracy_pct=args.min_accuracy
+        )
+    elif args.input:
+        if not args.input.exists():
+            print(f"Error: model not found: {args.input}", file=sys.stderr)
+            return 1
+        result = compile_model(args.input, args.output, batch_size=args.batch_size, min_accuracy_pct=args.min_accuracy)
     else:
         if args.reference == "mnist":
             network = build_mnist_bnn()
@@ -88,14 +111,13 @@ def main(argv: list[str] | None = None) -> int:
                 num_classes=args.num_classes,
             )
 
-        cal_data, _ = generate_calibration(
-            network, num_samples=args.calibration_samples
-        )
+        cal_data, cal_labels = generate_calibration(network, num_samples=args.calibration_samples)
         result = compile_network(
             network,
             args.output,
             batch_size=args.batch_size,
             calibration_data=cal_data,
+            calibration_labels=cal_labels,
             min_accuracy_pct=args.min_accuracy,
         )
 

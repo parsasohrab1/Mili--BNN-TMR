@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import dataclass
 from enum import Enum
@@ -14,7 +15,9 @@ from mili_bnn_tmr.compiler.mili_format import MiliModel
 from mili_bnn_tmr.compiler.pipeline import load_compiled
 from mili_bnn_tmr.compiler.runtime import MiliRuntime
 from mili_bnn_tmr.config import ChipSpec, load_chip_spec
+from mili_bnn_tmr.silicon_revision import SiliconRevision, SiliconRevisionInfo
 from mili_bnn_tmr.integration.backend import BackendType, HardwareBackend
+from mili_bnn_tmr.integration.backend_factory import create_backend
 from mili_bnn_tmr.integration.e2e import (
     AcceptanceReport,
     ClassificationResult,
@@ -54,6 +57,7 @@ class MiliChip:
         use_hardware: bool = True,
         backend: HardwareBackend | None = None,
         stm32_port: Any | None = None,
+        backend_kind: str | None = None,
     ):
         self._spec = spec or load_chip_spec()
         self._interface = interface
@@ -66,10 +70,12 @@ class MiliChip:
 
         if backend is not None:
             self._hw = backend
+        elif backend_kind:
+            self._hw = create_backend(backend_kind, stm32_port=stm32_port)
         elif interface == InterfaceType.SPI and stm32_port:
             self._hw: HardwareBackend | None = STM32Backend(stm32_port)
         elif use_hardware:
-            self._hw = SimulatorBackend()
+            self._hw = create_backend(os.environ.get("MILI_BACKEND", "simulator"))
         else:
             self._hw = None
 
@@ -85,6 +91,23 @@ class MiliChip:
     @property
     def spec(self) -> ChipSpec:
         return self._spec
+
+    @property
+    def silicon_rev(self) -> str:
+        return self._spec.silicon_rev
+
+    def get_silicon_info(self) -> dict[str, Any]:
+        """Return silicon revision traceability (A0 → A1 …)."""
+        rev = SiliconRevision.from_string(self._spec.silicon_rev)
+        tapeout = self._spec.tapeout
+        info = SiliconRevisionInfo(
+            revision=rev,
+            lot_id=str(tapeout.get("lot_id", "")),
+            foundry=str(tapeout.get("foundry", "")),
+            packaging=self._spec.packaging,
+            engineering_samples=int(tapeout.get("engineering_samples", 0)),
+        )
+        return info.to_dict()
 
     @property
     def is_model_loaded(self) -> bool:
@@ -115,10 +138,31 @@ class MiliChip:
             self._mili_model = load_compiled(mili_path)
             self._runtime = MiliRuntime(self._mili_model)
             path = mili_path
+        elif path.suffix in (".tflite", ".lite"):
+            from mili_bnn_tmr.compiler.pipeline import compile_tflite
+
+            mili_path = path.with_suffix(".mili")
+            compile_tflite(path, mili_path, min_accuracy_pct=95.0)
+            self._mili_model = load_compiled(mili_path)
+            self._runtime = MiliRuntime(self._mili_model)
+            path = mili_path
+        elif path.suffix == ".pt":
+            from mili_bnn_tmr.compiler.pipeline import compile_pytorch
+
+            mili_path = path.with_suffix(".mili")
+            try:
+                compile_pytorch(path, mili_path, min_accuracy_pct=95.0)
+            except Exception as exc:
+                raise ValueError(
+                    f"Failed to compile PyTorch model '{path.name}': {exc}"
+                ) from exc
+            self._mili_model = load_compiled(mili_path)
+            self._runtime = MiliRuntime(self._mili_model)
+            path = mili_path
         else:
             raise ValueError(
                 f"Unsupported model format '{path.suffix}'. "
-                f"Use .mili or .onnx (supported: {self.SUPPORTED_EXTENSIONS})"
+                f"Supported: {self.SUPPORTED_EXTENSIONS}"
             )
 
         self._model_path = path
@@ -158,12 +202,15 @@ class MiliChip:
         state = self._dpm.current_state
         latency = self._runtime.estimate_latency_ms(state.frequency_mhz)
         energy = state.power_w * latency / 1000.0
+        tmr_corrected = False
+        if self._hw:
+            tmr_corrected = bool(self._hw.get_tmr_stats().get("tmr_corrected", False))
 
         return InferenceResult(
             output=output,
             latency_ms=latency,
             power_mode=self._dpm.current_mode,
-            tmr_corrected=False,
+            tmr_corrected=tmr_corrected,
             energy_mj=energy,
             backend="software",
         )
@@ -182,12 +229,13 @@ class MiliChip:
         output = tmr_execute(_hw_compute)
         latency = (time.perf_counter() - t0) * 1000
         state = self._dpm.current_state
+        tmr_stats = self._hw.get_tmr_stats() if self._hw else {}
 
         return InferenceResult(
             output=output,
             latency_ms=round(latency, 3),
             power_mode=self._dpm.current_mode,
-            tmr_corrected=False,
+            tmr_corrected=bool(tmr_stats.get("tmr_corrected", False)),
             energy_mj=round(state.power_w * latency / 1000.0, 3),
             backend=self._hw.backend_type.value if self._hw else "hardware",
         )
@@ -219,27 +267,21 @@ class MiliChip:
         """Run Phase 4 acceptance criteria validation."""
         if not self._e2e:
             raise RuntimeError("Hardware backend not available")
-        return self._e2e.run_acceptance_test()
+        return self._e2e.run_acceptance_test(runtime=self._runtime)
 
     def inject_fault(self, fault_lane: int = 0) -> dict[str, int | bool]:
         """Enable RTL-compatible TMR fault injection on the hardware backend."""
-        from mili_bnn_tmr.integration.sim_backend import SimulatorBackend
-
-        if isinstance(self._hw, SimulatorBackend):
+        if self._hw and hasattr(self._hw, "inject_tmr_fault"):
             self._hw.inject_tmr_fault(fault_lane)
             return {"fault_lane": fault_lane, "injected": True}
-        raise RuntimeError("Fault injection requires simulator backend")
+        raise RuntimeError("Fault injection requires simulator/FPGA backend")
 
     def clear_fault(self) -> None:
-        from mili_bnn_tmr.integration.sim_backend import SimulatorBackend
-
-        if isinstance(self._hw, SimulatorBackend):
+        if self._hw and hasattr(self._hw, "clear_tmr_fault"):
             self._hw.clear_tmr_fault()
 
     def get_tmr_stats(self) -> dict[str, int | bool]:
-        from mili_bnn_tmr.integration.sim_backend import SimulatorBackend
-
-        if isinstance(self._hw, SimulatorBackend):
+        if self._hw:
             return self._hw.get_tmr_stats()
         return {"disagree": False, "err_count": 0, "tmr_corrected": False}
 
@@ -269,6 +311,10 @@ class MiliChip:
         state = self._dpm.current_state
         status: dict[str, Any] = {
             "chip": self._spec.name,
+            "silicon_rev": self._spec.silicon_rev,
+            "packaging": self._spec.packaging,
+            "operating_temp_c": list(self._spec.operating_temp_c),
+            "interfaces": list(self._spec.interfaces),
             "interface": self._interface.value,
             "power_mode": self._dpm.current_mode.value,
             "frequency_mhz": state.frequency_mhz,

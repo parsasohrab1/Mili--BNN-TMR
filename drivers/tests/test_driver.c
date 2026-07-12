@@ -102,6 +102,22 @@ static int test_load_and_infer(const char *model_path)
     return 0;
 }
 
+static int test_tmr_correction(void)
+{
+    mili_chip_t *chip = mili_chip_open(MILI_IFACE_SPI);
+    uint32_t tmr_stat = 0;
+
+    assert(mili_chip_reg_write(chip, MILI_REG_TMR_CTRL,
+                               MILI_TMR_EN | MILI_TMR_FAULT_INJECT) == MILI_OK);
+    assert(mili_chip_reg_write(chip, MILI_REG_INFER_CTRL, MILI_INFER_START) == MILI_OK);
+    assert(mili_chip_reg_read(chip, MILI_REG_TMR_STAT, &tmr_stat) == MILI_OK);
+    assert(tmr_stat & MILI_TMR_DISAGREE);
+
+    mili_chip_close(chip);
+    printf("  [PASS] TMR correction flag\n");
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     const char *model = (argc > 1) ? argv[1] : "test_model.mili";
@@ -114,6 +130,7 @@ int main(int argc, char **argv)
     test_chip_open_close();
     test_dma_transfer();
     test_power_mode();
+    test_tmr_correction();
     test_load_and_infer(model);
 
     printf("\nAll driver tests PASSED.\n");

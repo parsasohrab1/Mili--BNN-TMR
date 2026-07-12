@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import struct
 import time
-from typing import IO
+from typing import IO, Any
 
 from mili_bnn_tmr.integration.backend import (
     BackendType,
@@ -24,14 +24,27 @@ _CMD_DPM = 0x05
 _CMD_INFER = 0x06
 
 
+def _open_serial_port(port: str | Any) -> IO[bytes] | None:
+    if port is None:
+        return None
+    if hasattr(port, "read") and hasattr(port, "write"):
+        return port
+    try:
+        import serial
+
+        return serial.Serial(port, baudrate=115200, timeout=2.0)
+    except Exception:
+        return None
+
+
 class STM32Backend(HardwareBackend):
     """
-    Bridge to STM32H7 firmware over USB-UART or socket.
+    Bridge to STM32H7 firmware over USB-UART (pyserial).
     Falls back to in-process simulator when no device connected.
     """
 
-    def __init__(self, port: IO[bytes] | None = None) -> None:
-        self._port = port
+    def __init__(self, port: str | IO[bytes] | None = None) -> None:
+        self._port = _open_serial_port(port)
         self._fallback = SimulatorBackend()
         self._power_mode = PowerMode.NORMAL
 
@@ -113,6 +126,26 @@ class STM32Backend(HardwareBackend):
             if self.read_reg(0x28) & 0x02:
                 return True
         return False
+
+    def inject_tmr_fault(self, fault_lane: int = 0) -> None:
+        from mili_bnn_tmr.integration.tmr_fault import inject_tmr_fault_csr
+
+        inject_tmr_fault_csr(self, fault_lane)
+
+    def clear_tmr_fault(self) -> None:
+        from mili_bnn_tmr.integration.tmr_fault import clear_tmr_fault_csr
+
+        clear_tmr_fault_csr(self)
+
+    def get_tmr_stats(self) -> dict[str, int | bool]:
+        if not self._port:
+            return self._fallback.get_tmr_stats()
+        from mili_bnn_tmr.integration.tmr_fault import get_tmr_stats_csr
+
+        stats = get_tmr_stats_csr(self)
+        if self._fallback._last_tmr_corrected:
+            stats["tmr_corrected"] = True
+        return stats
 
 
 _MODE_TO_BYTE = {

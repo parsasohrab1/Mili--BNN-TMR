@@ -1,0 +1,32 @@
+# DO-254 DAL-B — Requirements traceability matrix (excerpt)
+
+design: Mili BNN-TMR
+dal_level: B
+version: "1.0.0"
+
+requirements:
+  - id: FR-1
+    description: BNN inference throughput >= 2 TOPS/W
+    source: chip_spec.yaml#requirements
+    verification: tests/test_benchmark.py
+    status: verified
+  - id: FR-2
+    description: SEU correction >= 99% (TMR)
+    source: chip_spec.yaml#radiation
+    verification: tests/test_radiation.py
+    status: verified
+  - id: FR-3
+    description: E2E latency < 10 ms
+    source: integration/board/dev_board.yaml
+    verification: tests/test_e2e.py
+    status: verified
+  - id: FR-4
+    description: Power modes DPM switch < 100 us
+    source: chip_spec.yaml#power_states
+    verification: tests/test_dpm.py
+    status: verified
+  - id: NFR-1
+    description: RTL signoff (Verilator)
+    source: sim/verilator/signoff_gate.sh
+    verification: CI rtl job
+    status: verified

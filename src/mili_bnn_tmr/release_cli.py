@@ -10,6 +10,7 @@ from pathlib import Path
 def main(argv: list[str] | None = None) -> int:
     from mili_bnn_tmr.release import (
         CertificationRegistry,
+        DO254EvidenceBuilder,
         ProductionQC,
         ReleaseValidator,
         SDKPackager,
@@ -22,8 +23,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build-sdk", action="store_true", help="Build SDK tarball")
     parser.add_argument("--qc", action="store_true", help="Run production QC report")
     parser.add_argument("--certs", action="store_true", help="List certifications")
+    parser.add_argument("--do254", action="store_true", help="Export DO-254 DAL-B evidence package")
     parser.add_argument("-o", "--output", type=Path, default=Path("dist"))
     args = parser.parse_args(argv)
+
+    if args.do254:
+        path = DO254EvidenceBuilder().export()
+        pkg = DO254EvidenceBuilder().build()
+        print("=== DO-254 DAL-B Evidence Package ===")
+        print(f"  Completion:  {pkg.completion_pct}%")
+        print(f"  Artifacts:   {len(pkg.artifacts)}")
+        print(f"  Ready:       {pkg.ready_for_review}")
+        print(f"  Manifest:    {path}")
+        return 0 if pkg.completion_pct >= 90 else 1
 
     if args.certs or args.acceptance:
         certs = CertificationRegistry().summary()

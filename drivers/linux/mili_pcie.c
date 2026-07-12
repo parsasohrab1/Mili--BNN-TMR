@@ -30,9 +30,23 @@ struct mili_pcie_dev {
     volatile uint32_t irq_pending;
     mili_irq_callback_t irq_cb;
     void            *irq_user;
+    int              irq;
 };
 
 static struct mili_pcie_dev *g_mili_pdev;
+
+static uint32_t pcie_map_addr(uint32_t addr, uint32_t *bar_off)
+{
+    if (addr >= MILI_SRAM_BASE && addr <= MILI_SRAM_END) {
+        *bar_off = 0x10000u + (addr - MILI_SRAM_BASE);
+        return 0;
+    }
+    if (addr >= MILI_CSR_BASE) {
+        *bar_off = addr - MILI_CSR_BASE;
+        return 0;
+    }
+    return 1;
+}
 
 static int pcie_read_reg(void *ctx, uint32_t offset, uint32_t *value)
 {
@@ -56,7 +70,9 @@ static int pcie_dma_write(void *ctx, uint32_t sram_addr,
                           const void *src, uint32_t len)
 {
     struct mili_pcie_dev *dev = ctx;
-    uint32_t bar_off = sram_addr - MILI_CSR_BASE;
+    uint32_t bar_off;
+    if (pcie_map_addr(sram_addr, &bar_off))
+        return MILI_HAL_ERR;
     if (bar_off + len > MILI_PCIE_BAR0_SIZE)
         return MILI_HAL_ERR;
     memcpy_toio(dev->bar0 + bar_off, src, len);
@@ -67,7 +83,9 @@ static int pcie_dma_read(void *ctx, uint32_t sram_addr,
                          void *dst, uint32_t len)
 {
     struct mili_pcie_dev *dev = ctx;
-    uint32_t bar_off = sram_addr - MILI_CSR_BASE;
+    uint32_t bar_off;
+    if (pcie_map_addr(sram_addr, &bar_off))
+        return MILI_HAL_ERR;
     if (bar_off + len > MILI_PCIE_BAR0_SIZE)
         return MILI_HAL_ERR;
     memcpy_fromio(dst, dev->bar0 + bar_off, len);
@@ -145,7 +163,13 @@ static int mili_pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id)
     dev->pdev = pdev;
     g_mili_pdev = dev;
 
-    rc = request_irq(pdev->irq, mili_pcie_irq_handler, IRQF_SHARED,
+    /* Enable MSI/MSI-X when available */
+    pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_MSI | PCI_IRQ_LEGACY);
+    dev->irq = pci_irq_vector(pdev, 0);
+    if (dev->irq < 0)
+        dev->irq = pdev->irq;
+
+    rc = request_irq(dev->irq, mili_pcie_irq_handler, IRQF_SHARED,
                      "mili-bnn", dev);
     if (rc)
         return rc;
@@ -157,7 +181,8 @@ static int mili_pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 static void mili_pcie_remove(struct pci_dev *pdev)
 {
     struct mili_pcie_dev *dev = pci_get_drvdata(pdev);
-    free_irq(pdev->irq, dev);
+    free_irq(dev->irq, dev);
+    pci_free_irq_vectors(pdev);
     pci_iounmap(pdev, dev->bar0);
     pci_disable_device(pdev);
     g_mili_pdev = NULL;

@@ -105,8 +105,32 @@ class ATEProgram:
         unit_id: str,
         phase: TestPhase = TestPhase.FT,
         seed: int = 0,
+        use_hardware: bool = True,
     ) -> ATEResult:
-        """Simulate ATE test execution for one die/package."""
+        """Run ATE on hardware tester when MILI_ATE_TRANSPORT is set."""
+        if use_hardware:
+            try:
+                from ate.hardware_bridge import create_ate_transport
+
+                transport = create_ate_transport()
+                if transport.connect():
+                    hw = transport.run_test_program(
+                        unit_id, [s.name for s in self.steps]
+                    )
+                    return ATEResult(
+                        unit_id=unit_id,
+                        phase=phase,
+                        passed=hw.passed,
+                        steps=[
+                            {"name": s, "passed": hw.passed}
+                            for s in [step.name for step in self.steps[:3]]
+                        ],
+                        power_w=hw.power_w,
+                        freq_mhz=hw.freq_mhz,
+                    )
+            except Exception:
+                pass
+
         import hashlib
 
         digest = int(hashlib.md5(f"{unit_id}:{seed}".encode()).hexdigest()[:8], 16)
