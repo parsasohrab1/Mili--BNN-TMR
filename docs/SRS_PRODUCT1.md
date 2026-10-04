@@ -1,142 +1,142 @@
 
-تراشه شتاب‌دهنده BNN با معماری سیستولیک + TMR
+BNN Accelerator Chip with Systolic Architecture + TMR
 Edge AI Accelerator Chip with Systolic Array + TMR
-1. مقدمه (Introduction)
-1.1 هدف (Purpose)
-این سند مشخصات کامل سیستم را برای تراشه شتاب‌دهنده هوش مصنوعی لبه‌ای با معماری ماتریس سیستولیک و مقاوم‌سازی سه‌گانه (TMR) در برابر خطاهای نرم تشریح می‌کند. هدف اصلی، طراحی تراشه‌ای کم‌مصرف (توان کمتر از ۵۰ وات) با کارایی بالا برای اجرای شبکه‌های عصبی باینری (BNN) در سامانه‌های هوایی خودگردان است.
+1. Introduction
+1.1 Purpose
+This document describes the complete system specification for an edge AI accelerator chip with a systolic matrix architecture and triple modular redundancy (TMR) against soft errors. The main goal is to design a low-power chip (under 50 W) with high performance for running binary neural networks (BNN) in autonomous aerial systems.
 
-1.2 محدوده (Scope)
-طراحی تراشه ASIC ۱۴ نانومتری
+1.2 Scope
+14 nm ASIC chip design
 
-پشتیبانی از شبکه‌های عصبی باینری (۱-بیت) با عمق تا ۲۰ لایه
+Support for binary (1-bit) neural networks up to 20 layers deep
 
-مقاوم‌سازی در برابر خطاهای نرم (SEU) با روش TMR
+Soft error (SEU) hardening using TMR
 
-رابط‌های ارتباطی: PCIe Gen4, SPI, I2C, UART
+Communication interfaces: PCIe Gen4, SPI, I2C, UART
 
-مصرف توان هدف: < ۵۰ وات
+Target power consumption: < 50 W
 
-دمای عملیاتی: -۴۰°C تا +۸۵°C
+Operating temperature: -40°C to +85°C
 
-1.3 اصطلاحات و اختصارات (Definitions & Acronyms)
-اختصار	توضیح
-BNN	Binary Neural Network - شبکه عصبی با وزن‌های ۱-بیتی
-TMR	Triple Modular Redundancy - افزونگی مدولار سه‌گانه
-SEU	Single Event Upset - خطای نرم ناشی از تشعشع
-TOPS	Tera Operations Per Second - ترا عملیات در ثانیه
+1.3 Definitions & Acronyms
+Acronym	Description
+BNN	Binary Neural Network - neural network with 1-bit weights
+TMR	Triple Modular Redundancy
+SEU	Single Event Upset - soft error caused by radiation
+TOPS	Tera Operations Per Second
 ASIC	Application-Specific Integrated Circuit
-2. الزامات کلی (Overall Description)
-2.1 پرسپکتیو محصول (Product Perspective)
-این تراشه به عنوان شتاب‌دهنده تخصصی در کنار پردازنده اصلی (STM32H7) قرار می‌گیرد و وظیفه اجرای الگوریتم‌های سنگین بینایی ماشین و یادگیری عمیق را بر عهده دارد.
+2. Overall Description
+2.1 Product Perspective
+This chip is placed alongside the main processor (STM32H7) as a dedicated accelerator and is responsible for running heavy machine vision and deep learning algorithms.
 
 text
 ┌─────────────────────────────────────────────┐
-│           پردازنده اصلی (STM32H7)           │
-│  کنترل پرواز، فیوژن حسگر، ارتباطات          │
+│        Main Processor (STM32H7)             │
+│  Flight control, sensor fusion, comms       │
 └──────────────┬──────────────────────────────┘
                │ PCIe/SPI
 ┌──────────────▼──────────────────────────────┐
-│     تراشه شتاب‌دهنده BNN (ASIC)            │
-│  • معماری سیستولیک                         │
-│  • TMR برای مقاوم‌سازی                     │
-│  • توان < ۵۰ وات                           │
+│     BNN Accelerator Chip (ASIC)            │
+│  • Systolic architecture                   │
+│  • TMR for hardening                       │
+│  • Power < 50 W                            │
 └─────────────────────────────────────────────┘
-2.2 ویژگی‌های اصلی (Product Functions)
-اجرای شبکه BNN: پشتیبانی از مدل‌های پیش‌آموزش‌دیده با دقت > ۹۵٪
+2.2 Product Functions
+BNN execution: support for pre-trained models with accuracy > 95%
 
-مقاوم‌سازی TMR: تصحیح خطا در سه ماژول موازی با رأی‌گیری اکثریت
+TMR hardening: error correction across three parallel modules with majority voting
 
-پردازش بلادرنگ: تأخیر کمتر از ۱۰ میلی‌ثانیه برای هر تصویر
+Real-time processing: latency under 10 milliseconds per image
 
-مدیریت توان: قابلیت تنظیم فرکانس و ولتاژ دینامیک
+Power management: dynamic frequency and voltage scaling
 
-2.3 کاربران (User Characteristics)
-مهندسان سخت‌افزار: برای یکپارچه‌سازی و تست
+2.3 User Characteristics
+Hardware engineers: for integration and testing
 
-مهندسان نرم‌افزار: برای توسعه درایور و API
+Software engineers: for driver and API development
 
-توسعه‌دهندگان الگوریتم: برای پیاده‌سازی مدل‌های عصبی
+Algorithm developers: for implementing neural models
 
-3. الزامات سیستم (System Requirements)
-3.1 الزامات سخت‌افزاری (Hardware Requirements)
-پارامتر	مقدار	توضیح
-تکنولوژی ساخت	۱۴ نانومتری FinFET	
-ولتاژ کاری	۰.۸۵V - ۱.۲V	قابل تنظیم
-فرکانس پایه	۴۰۰ MHz	قابل اسکیل تا ۸۰۰ MHz
-حافظه داخلی	۳۲ MB SRAM	با ECC
-پهنای باند حافظه	۲۵۶ بیت	
-تعداد هسته‌ها	۶۴ PE (Processing Element)	آرایه ۸×۸
-توان مصرفی	< ۵۰ وات	Typical: ۳۰ وات
-بسته‌بندی	BGA-484	
-3.2 الزامات نرم‌افزاری (Software Requirements)
-ویژگی	الزام
-سیستم‌عامل پشتیبانی‌شده	Linux RT, Zephyr, FreeRTOS
-درایور	PCIe/SPI با پشتیبانی DMA
-API سطح بالا	Python/C++ برای بارگذاری مدل
-پشتیبانی از فرمت‌ها	ONNX, TensorFlow Lite, PyTorch
-ابزارهای توسعه	کامپایلر/بهینه‌ساز مدل
-4. مشخصات عملکردی (Functional Requirements)
-4.1 FR-1: استنتاج شبکه عصبی باینری
-توضیح: تراشه باید بتواند یک شبکه عصبی باینری با وزن‌های ۱-بیتی را در زمان واقعی اجرا کند.
+3. System Requirements
+3.1 Hardware Requirements
+Parameter	Value	Description
+Fabrication technology	14 nm FinFET
+Operating voltage	0.85V - 1.2V	Adjustable
+Base frequency	400 MHz	Scalable up to 800 MHz
+Internal memory	32 MB SRAM	With ECC
+Memory bandwidth	256 bits
+Number of cores	64 PE (Processing Element)	8×8 array
+Power consumption	< 50 W	Typical: 30 W
+Packaging	BGA-484
+3.2 Software Requirements
+Feature	Requirement
+Supported operating systems	Linux RT, Zephyr, FreeRTOS
+Driver	PCIe/SPI with DMA support
+High-level API	Python/C++ for model loading
+Supported formats	ONNX, TensorFlow Lite, PyTorch
+Development tools	Model compiler/optimizer
+4. Functional Requirements
+4.1 FR-1: Binary Neural Network Inference
+Description: The chip must be able to run a binary neural network with 1-bit weights in real time.
 
-ورودی:
+Input:
 
-تصویر یا ویژگی‌های استخراج‌شده (اندازه متغیر: ۳۲×۳۲ تا ۲۲۴×۲۲۴)
+Image or extracted features (variable size: 32×32 to 224×224)
 
-وزن‌های شبکه (ذخیره شده در حافظه داخلی)
+Network weights (stored in internal memory)
 
-خروجی:
+Output:
 
-نتیجه طبقه‌بندی یا شناسایی
+Classification or detection result
 
-بردار ویژگی‌های استخراج‌شده
+Extracted feature vector
 
-معیار پذیرش:
+Acceptance criteria:
 
-دقت ≥ ۹۵% نسبت به نسخه float
+Accuracy ≥ 95% relative to the float version
 
-تأخیر < ۱۰ms برای تصویر ۲۲۴×۲۲۴
+Latency < 10 ms for a 224×224 image
 
-مصرف انرژی < ۲mJ به ازای هر استنتاج
+Energy consumption < 2 mJ per inference
 
-4.2 FR-2: مقاوم‌سازی در برابر خطا (TMR)
-توضیح: سیستم باید با استفاده از افزونگی سه‌گانه، خطاهای نرم را تصحیح کند.
+4.2 FR-2: Fault Tolerance (TMR)
+Description: The system must correct soft errors using triple redundancy.
 
-ورودی:
+Input:
 
-سه ماژول محاسباتی موازی
+Three parallel compute modules
 
-داده‌های ورودی یکسان
+Identical input data
 
-خروجی:
+Output:
 
-خروجی اکثریت رأی‌گیری‌شده
+Majority-voted output
 
-معیار پذیرش:
+Acceptance criteria:
 
-تشخیص و تصحیح ≥ ۹۹% از خطاهای SEU
+Detection and correction of ≥ 99% of SEU errors
 
-تأخیر اضافی TMR < ۵%
+Additional TMR latency < 5%
 
-افزایش توان < ۱۵%
+Power increase < 15%
 
-4.3 FR-3: مدیریت توان پویا (Dynamic Power Management)
-توضیح: تراشه باید بتواند فرکانس و ولتاژ را بر اساس بار کاری تنظیم کند.
+4.3 FR-3: Dynamic Power Management
+Description: The chip must be able to adjust frequency and voltage based on workload.
 
-حالت‌های توان:
+Power modes:
 
-حالت	فرکانس	توان مصرفی	زمان فعال‌سازی
-Sleep	۰ MHz	< ۱۰mW	< ۱μs
-Idle	۱۰۰ MHz	۵W	< ۵۰μs
-Normal	۴۰۰ MHz	۳۰W	پایه
-Turbo	۸۰۰ MHz	۴۸W	< ۱۰۰μs
-معیار پذیرش:
+Mode	Frequency	Power consumption	Activation time
+Sleep	0 MHz	< 10 mW	< 1 μs
+Idle	100 MHz	5 W	< 50 μs
+Normal	400 MHz	30 W	Baseline
+Turbo	800 MHz	48 W	< 100 μs
+Acceptance criteria:
 
-زمان سوئیچ بین حالت‌ها < ۱۰۰μs
+Mode switching time < 100 μs
 
-کاهش توان حداقل ۴۰% در حالت Idle
+Power reduction of at least 40% in Idle mode
 
-5. کد تولید داده - محصول اول
+5. Data Generation Code - Product 1
 python
 # =====================================================
 # SRS - PRODUCT 1: EDGE AI CHIP WITH BNN + TMR
@@ -151,22 +151,22 @@ np.random.seed(42)
 
 def generate_chip_benchmark_data():
     """
-    تولید داده‌های معیار عملکرد تراشه بر اساس SRS
-    شامل ۴ سناریو: عادی، تنش حرارتی، تشعشع، لرزش بالا
+    Generates chip performance benchmark data based on the SRS
+    Includes 4 scenarios: normal, thermal stress, radiation, high vibration
     """
     
     chip_data = []
     scenarios = ['nominal', 'thermal_stress', 'radiation_SEU', 'high_vibration']
     batch_sizes = [1, 4, 16, 64]
     frequencies = [100, 200, 400, 800]  # MHz
-    temperatures = [25, 50, 75, 85]  # درجه سانتی‌گراد
+    temperatures = [25, 50, 75, 85]  # degrees Celsius
     
     for scenario in scenarios:
         for batch in batch_sizes:
             for freq in frequencies:
-                # ========== محاسبه توان مصرفی ==========
-                # فرمول: P = P0 + α*f + β*T + γ*error_rate
-                base_power = 5.0 + (freq / 100) * 2.5  # وات
+                # ========== Power consumption calculation ==========
+                # Formula: P = P0 + α*f + β*T + γ*error_rate
+                base_power = 5.0 + (freq / 100) * 2.5  # watts
                 
                 if scenario == 'nominal':
                     power = base_power + np.random.normal(0, 0.5)
@@ -174,14 +174,14 @@ def generate_chip_benchmark_data():
                     temp_factor = 1 + (temperatures[batch_sizes.index(batch) % 4] - 25) * 0.008
                     power = base_power * temp_factor + np.random.normal(0, 0.3)
                 elif scenario == 'radiation_SEU':
-                    # افزایش توان به دلیل TMR فعال
+                    # Power increase due to active TMR
                     power = base_power * 1.15 + np.random.normal(0, 0.2)
                 else:  # high_vibration
                     power = base_power * 1.1 + np.random.normal(0, 0.4)
                 
                 power = max(0.1, round(power, 2))
                 
-                # ========== محاسبه تأخیر ==========
+                # ========== Latency calculation ==========
                 # Latency = L0 + (batch/freq) * K
                 base_latency = (batch ** 0.3) * (1000 / freq) * 2
                 if scenario == 'thermal_stress':
@@ -195,7 +195,7 @@ def generate_chip_benchmark_data():
                 
                 latency = round(latency + np.random.normal(0, 0.1), 2)
                 
-                # ========== محاسبه TOPS/W ==========
+                # ========== TOPS/W calculation ==========
                 # TOPS/W = (TOPS) / Power
                 tops = 64.0 * (freq / 400) * (1 - 0.01 * (batch - 1))
                 if scenario == 'thermal_stress':
@@ -207,7 +207,7 @@ def generate_chip_benchmark_data():
                 
                 tops_per_watt = round(tops / power if power > 0 else 0, 2)
                 
-                # ========== محاسبه دقت ==========
+                # ========== Accuracy calculation ==========
                 # Accuracy = 97% - degradation
                 base_accuracy = 97.5 - (batch ** 0.2) * 0.3
                 if scenario == 'radiation_SEU':
@@ -220,11 +220,11 @@ def generate_chip_benchmark_data():
                 accuracy = round(accuracy + np.random.normal(0, 0.2), 2)
                 accuracy = min(99.5, max(80.0, accuracy))
                 
-                # ========== اثرگذاری TMR ==========
+                # ========== TMR impact ==========
                 tmr_effectiveness = 99.5 if scenario != 'radiation_SEU' else 92.0 + np.random.normal(0, 1)
                 tmr_effectiveness = round(min(100, max(85, tmr_effectiveness)), 2)
                 
-                # ========== انرژی مصرفی هر استنتاج ==========
+                # ========== Energy per inference ==========
                 energy_per_inference = round((power * latency) / 1000, 4)
                 
                 chip_data.append({
@@ -248,12 +248,12 @@ def generate_chip_benchmark_data():
     
     return pd.DataFrame(chip_data)
 
-# ========== تولید و ذخیره داده ==========
+# ========== Generate and save data ==========
 print("🚀 Generating Product 1 (Edge AI Chip) benchmark data...")
 df_chip = generate_chip_benchmark_data()
 df_chip.to_csv('edge_ai_chip_benchmark.csv', index=False)
 
-# ========== گزارش آماری ==========
+# ========== Statistical report ==========
 print("\n" + "="*60)
 print("PRODUCT 1 - EDGE AI CHIP BENCHMARK SUMMARY")
 print("="*60)
